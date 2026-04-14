@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TourneyPro — Player View</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+*{font-family:'Inter',sans-serif;box-sizing:border-box;margin:0;padding:0}
+body{background:#060610;color:#e2e8f0;min-height:100vh}
+.glass{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07)}
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px}
+.tab-btn{padding:8px 18px;border-radius:20px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;border:none;color:#64748b;background:transparent}
+.tab-btn.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.badge{padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:700;text-transform:uppercase}
+.badge-upcoming{background:rgba(99,102,241,0.15);color:#a5b4fc}
+.badge-ongoing{background:rgba(16,185,129,0.15);color:#6ee7b7}
+.badge-completed{background:rgba(100,116,139,0.15);color:#94a3b8}
+.badge-live{background:rgba(239,68,68,0.2);color:#fca5a5;animation:pulse 2s infinite}
+.badge-scheduled{background:rgba(245,158,11,0.15);color:#fcd34d}
+.badge-league{background:rgba(139,92,246,0.15);color:#c4b5fd}
+.badge-knockout{background:rgba(249,115,22,0.15);color:#fdba74}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.spinner{width:24px;height:24px;border:2px solid rgba(255,255,255,0.1);border-top:2px solid #6366f1;border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.match-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;transition:border-color .2s}
+.match-card:hover{border-color:rgba(99,102,241,0.3)}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;padding:8px 12px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.07)}
+.tbl td{padding:10px 12px;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+.rank-1{color:#fbbf24}.rank-2{color:#94a3b8}.rank-3{color:#f97316}
+.progress-bar{background:rgba(255,255,255,0.05);border-radius:999px;overflow:hidden;height:5px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:999px}
+.live-pulse{width:8px;height:8px;background:#ef4444;border-radius:50%;animation:lpulse 1.5s ease-in-out infinite;display:inline-block;margin-right:6px}
+@keyframes lpulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+select{background:#0d0d1a;border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;border-radius:10px;padding:8px 12px;font-size:.875rem;outline:none}
+select:focus{border-color:#6366f1}
+select option{background:#0d0d1a}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="glass sticky top-0 z-50" style="border-bottom:1px solid rgba(255,255,255,0.07);border-radius:0">
+  <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+      </div>
+      <div>
+        <div class="text-white font-bold text-sm">TourneyPro</div>
+        <div class="text-slate-500 text-xs" id="player-greeting">Player View</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div id="live-indicator" class="hidden items-center gap-1 text-red-400 text-xs font-semibold">
+        <span class="live-pulse"></span>LIVE
+      </div>
+      <button onclick="logout()" class="text-slate-500 hover:text-red-400 transition-colors text-xs font-medium">Exit</button>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="max-w-4xl mx-auto px-4 py-6">
+
+  <!-- Tournament Selector -->
+  <div class="card mb-6">
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="text-white text-sm font-semibold">Tournament:</div>
+      <select id="tournament-select" onchange="onTournamentChange()" class="flex-1 min-w-40">
+        <option value="">Loading...</option>
+      </select>
+      <div id="t-badges" class="flex gap-2"></div>
+    </div>
+    <div id="t-info" class="hidden mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-2 mb-5 flex-wrap">
+    <button onclick="switchTab('live')" id="tab-live" class="tab-btn">🔴 Live</button>
+    <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn active">📅 Schedule</button>
+    <button onclick="switchTab('results')" id="tab-results" class="tab-btn">✅ Results</button>
+    <button onclick="switchTab('points')" id="tab-points" class="tab-btn">📊 Points Table</button>
+    <button onclick="switchTab('teams')" id="tab-teams" class="tab-btn">👥 Teams</button>
+    <button onclick="switchTab('rules')" id="tab-rules" class="tab-btn">📋 Rules & Format</button>
+  </div>
+
+  <!-- LIVE TAB -->
+  <div id="tab-content-live" class="hidden">
+    <div id="live-content">
+      <div class="text-center py-12">
+        <div class="spinner mx-auto mb-3"></div>
+        <p class="text-slate-500">Checking for live matches...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE TAB -->
+  <div id="tab-content-schedule">
+    <div id="schedule-content">
+      <div class="text-center py-12"><div class="spinner mx-auto mb-3"></div><p class="text-slate-500">Loading schedule...</p></div>
+    </div>
+  </div>
+
+  <!-- RESULTS TAB -->
+  <div id="tab-content-results" class="hidden">
+    <div id="results-content">
+      <div class="text-center py-12"><div class="spinner mx-auto mb-3"></div><p class="text-slate-500">Loading results...</p></div>
+    </div>
+  </div>
+
+  <!-- POINTS TABLE TAB -->
+  <div id="tab-content-points" class="hidden">
+    <div id="points-content">
+      <div class="text-center py-12"><div class="spinner mx-auto mb-3"></div><p class="text-slate-500">Loading standings...</p></div>
+    </div>
+  </div>
+
+  <!-- TEAMS TAB -->
+  <div id="tab-content-teams" class="hidden">
+    <div id="teams-content">
+      <div class="text-center py-12"><div class="spinner mx-auto mb-3"></div><p class="text-slate-500">Loading teams...</p></div>
+    </div>
+  </div>
+
+
+  <!-- RULES TAB -->
+  <div id="tab-content-rules" class="hidden">
+    <div id="rules-content">
+      <div class="text-center py-12"><div class="spinner mx-auto mb-3"></div><p class="text-slate-500">Loading rules...</p></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const API = '';
+let token = localStorage.getItem('token');
+let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+let currentTournament = null;
+let currentTab = 'schedule';
+
+if (!token) window.location.href = '/';
+
+function logout() { localStorage.clear(); window.location.href = '/'; }
+
+// Greeting
+if (currentUser.name) {
+  document.getElementById('player-greeting').textContent = `Welcome, ${currentUser.name}!`;
+}
+
+async function apiFetch(url) {
+  const res = await fetch(API + url, { headers: { 'Authorization': `Bearer ${token}` } });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message);
+  return data;
+}
+
+// ── Load tournaments ─────────────────────────────────────────────────────────
+async function loadTournaments() {
+  try {
+    const { data } = await apiFetch('/api/tournaments');
+    const sel = document.getElementById('tournament-select');
+    if (!data.length) {
+      sel.innerHTML = '<option value="">No tournaments yet</option>';
+      return;
+    }
+    sel.innerHTML = data.map(t => `<option value="${t._id}">${t.name} (${t.format})</option>`).join('');
+    onTournamentChange();
+  } catch (err) { console.error(err); }
+}
+
+async function onTournamentChange() {
+  const sel = document.getElementById('tournament-select');
+  const id = sel.value;
+  if (!id) return;
+  try {
+    const { data } = await apiFetch(`/api/tournaments/${id}`);
+    currentTournament = data;
+    // Badges
+    document.getElementById('t-badges').innerHTML = `
+      <span class="badge badge-${data.status}">${data.status}</span>
+      <span class="badge badge-${data.format}">${data.format}</span>`;
+    // Info
+    const info = document.getElementById('t-info');
+    info.className = 'mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3';
+    info.innerHTML = `
+      ${infoChip('🏅', 'Teams', (data.teams||[]).length)}
+      ${infoChip('💰', 'Prize Pool', '₹'+fmtNum(data.prizePool))}
+      ${infoChip('🎟', 'Entry Fee', '₹'+fmtNum(data.entryFee))}
+      ${infoChip('📅', 'Starts', fmtDateShort(data.startDate))}
+    `;
+    // Load current tab
+    loadCurrentTab();
+  } catch (err) { console.error(err); }
+}
+
+function infoChip(icon, label, val) {
+  return `<div class="text-center p-2 rounded-xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)">
+    <div class="text-lg mb-0.5">${icon}</div>
+    <div class="text-white font-bold text-sm">${val}</div>
+    <div class="text-slate-500 text-xs">${label}</div>
+  </div>`;
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  ['live','schedule','results','points','teams','rules'].forEach(t => {
+    const el = document.getElementById(`tab-content-${t}`);
+    if(el) el.classList.toggle('hidden', t !== tab);
+  });
+  loadCurrentTab();
+}
+
+function loadCurrentTab() {
+  if (currentTab === 'live') loadLive();
+  else if (currentTab === 'schedule') loadSchedule();
+  else if (currentTab === 'results') loadResults();
+  else if (currentTab === 'points') loadPoints();
+  else if (currentTab === 'teams') loadTeams();
+  else if (currentTab === 'rules') loadRules();
+}
+
+// ── Live ─────────────────────────────────────────────────────────────────────
+async function loadLive() {
+  const el = document.getElementById('live-content');
+  const ind = document.getElementById('live-indicator');
+  const tid = currentTournament?._id;
+  try {
+    const url = '/api/matches?status=live' + (tid ? `&tournament=${tid}` : '');
+    const { data } = await apiFetch(url);
+    if (!data.length) {
+      ind.classList.add('hidden'); ind.classList.remove('flex');
+      el.innerHTML = noData('🔴', 'No live matches right now', 'Check back during match time.');
+      return;
+    }
+    ind.classList.remove('hidden'); ind.classList.add('flex');
+    el.innerHTML = data.map(m => liveMatchCard(m)).join('');
+  } catch (err) { el.innerHTML = errMsg(err.message); }
+}
+
+function liveMatchCard(m) {
+  return `<div class="match-card mb-3" style="border-color:rgba(239,68,68,0.3)">
+    <div class="flex items-center justify-between mb-3">
+      <span class="badge badge-live">🔴 LIVE</span>
+      <span class="text-slate-500 text-xs">${esc(m.tournament?.name||'')}</span>
+    </div>
+    <div class="flex items-center justify-between">
+      <div class="text-center flex-1">
+        <div class="flex items-center justify-center gap-2 mb-1">
+          <div class="w-3 h-3 rounded-full" style="background:${m.team1?.color||'#6366f1'}"></div>
+          <span class="text-white font-bold text-sm">${esc(m.team1?.name||'?')}</span>
+        </div>
+        <div class="text-2xl font-black text-white">${m.score1 ?? '—'}</div>
+        ${m.scoreText1 ? `<div class="text-slate-500 text-xs">${esc(m.scoreText1)}</div>` : ''}
+      </div>
+      <div class="text-slate-600 font-bold text-lg mx-4">VS</div>
+      <div class="text-center flex-1">
+        <div class="flex items-center justify-center gap-2 mb-1">
+          <div class="w-3 h-3 rounded-full" style="background:${m.team2?.color||'#8b5cf6'}"></div>
+          <span class="text-white font-bold text-sm">${esc(m.team2?.name||'?')}</span>
+        </div>
+        <div class="text-2xl font-black text-white">${m.score2 ?? '—'}</div>
+        ${m.scoreText2 ? `<div class="text-slate-500 text-xs">${esc(m.scoreText2)}</div>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Schedule ─────────────────────────────────────────────────────────────────
+async function loadSchedule() {
+  const el = document.getElementById('schedule-content');
+  const tid = currentTournament?._id;
+  try {
+    const url = '/api/matches?status=scheduled' + (tid ? `&tournament=${tid}` : '');
+    const { data } = await apiFetch(url);
+    if (!data.length) {
+      el.innerHTML = noData('📅', 'No upcoming matches', 'All scheduled matches will appear here.');
+      return;
+    }
+    // Group by round
+    const grouped = {};
+    data.forEach(m => { const r = m.round||'Matches'; if(!grouped[r]) grouped[r]=[]; grouped[r].push(m); });
+    el.innerHTML = Object.entries(grouped).map(([round, matches]) => `
+      <div class="mb-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="text-white font-bold text-sm">${esc(round)}</div>
+          <div class="flex-1 h-px" style="background:rgba(255,255,255,0.07)"></div>
+          <span class="text-slate-500 text-xs">${matches.length} match${matches.length>1?'es':''}</span>
+        </div>
+        ${matches.map(m => scheduleCard(m)).join('')}
+      </div>`).join('');
+  } catch (err) { el.innerHTML = errMsg(err.message); }
+}
+
+function scheduleCard(m) {
+  return `<div class="match-card mb-2">
+    <div class="flex items-center justify-between">
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-2.5 h-2.5 rounded-full" style="background:${m.team1?.color||'#6366f1'}"></div>
+          <span class="text-white font-semibold text-sm">${esc(m.team1?.name||'?')}</span>
+          <span class="text-slate-600 text-xs">vs</span>
+          <div class="w-2.5 h-2.5 rounded-full" style="background:${m.team2?.color||'#8b5cf6'}"></div>
+          <span class="text-white font-semibold text-sm">${esc(m.team2?.name||'?')}</span>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-slate-500">
+          <span>📅 ${fmtDate(m.matchDate)}</span>
+          ${m.venue ? `<span>📍 ${esc(m.venue)}</span>` : ''}
+          <span class="text-indigo-400">${esc(m.tournament?.name||'')}</span>
+        </div>
+      </div>
+      <span class="badge badge-scheduled ml-3">Upcoming</span>
+    </div>
+  </div>`;
+}
+
+// ── Results ──────────────────────────────────────────────────────────────────
+async function loadResults() {
+  const el = document.getElementById('results-content');
+  const tid = currentTournament?._id;
+  try {
+    const url = '/api/matches?status=completed' + (tid ? `&tournament=${tid}` : '');
+    const { data } = await apiFetch(url);
+    if (!data.length) {
+      el.innerHTML = noData('✅', 'No results yet', 'Completed matches will appear here.');
+      return;
+    }
+    el.innerHTML = data.map(m => resultCard(m)).join('');
+  } catch (err) { el.innerHTML = errMsg(err.message); }
+}
+
+function resultCard(m) {
+  const t1Win = m.winner && m.winner._id === m.team1._id;
+  const t2Win = m.winner && m.winner._id === m.team2._id;
+  const isDraw = !m.winner;
+  return `<div class="match-card mb-3">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-slate-500 text-xs">${esc(m.round||'')} • ${esc(m.tournament?.name||'')}</span>
+      <span class="badge badge-completed">Final</span>
+    </div>
+    <div class="flex items-center justify-between">
+      <div class="flex-1 text-center">
+        <div class="flex items-center justify-center gap-1.5 mb-1">
+          <div class="w-2.5 h-2.5 rounded-full" style="background:${m.team1?.color||'#6366f1'}"></div>
+          <span class="${t1Win?'text-white font-bold':'text-slate-400'} text-sm">${esc(m.team1?.name||'?')}</span>
+          ${t1Win ? '<span class="text-yellow-400">🏆</span>' : ''}
+        </div>
+        <div class="${t1Win?'text-white':'text-slate-400'} text-2xl font-black">${m.scoreText1||m.score1}</div>
+      </div>
+      <div class="text-center mx-4">
+        <div class="text-slate-600 text-xs font-bold">—</div>
+        ${isDraw ? '<div class="text-yellow-400 text-xs font-bold mt-1">DRAW</div>' : ''}
+      </div>
+      <div class="flex-1 text-center">
+        <div class="flex items-center justify-center gap-1.5 mb-1">
+          ${t2Win ? '<span class="text-yellow-400">🏆</span>' : ''}
+          <span class="${t2Win?'text-white font-bold':'text-slate-400'} text-sm">${esc(m.team2?.name||'?')}</span>
+          <div class="w-2.5 h-2.5 rounded-full" style="background:${m.team2?.color||'#8b5cf6'}"></div>
+        </div>
+        <div class="${t2Win?'text-white':'text-slate-400'} text-2xl font-black">${m.scoreText2||m.score2}</div>
+      </div>
+    </div>
+    ${m.venue ? `<div class="text-center text-slate-600 text-xs mt-2">📍 ${esc(m.venue)}</div>` : ''}
+  </div>`;
+}
+
+// ── Points Table ─────────────────────────────────────────────────────────────
+async function loadPoints() {
+  const el = document.getElementById('points-content');
+  const tid = currentTournament?._id;
+  if (!tid) { el.innerHTML = noData('📊', 'Select a tournament', 'Choose a tournament above.'); return; }
+  if (currentTournament.format !== 'league') {
+    el.innerHTML = noData('🥊', 'Knockout Format', 'Points table is only available for League format tournaments.');
+    return;
+  }
+  try {
+    const { data } = await apiFetch(`/api/points/${tid}`);
+    if (!data.length) { el.innerHTML = noData('📊', 'No data yet', 'Points will appear after matches are played.'); return; }
+    const maxPts = data[0].points || 1;
+    el.innerHTML = `
+      <div class="flex gap-4 mb-4 text-xs text-slate-500 flex-wrap">
+        <span>🟢 Win = <strong class="text-white">2 pts</strong></span>
+        <span>🟡 Draw = <strong class="text-white">1 pt</strong></span>
+        <span>🔴 Loss = <strong class="text-white">0 pts</strong></span>
+      </div>
+      <div class="overflow-x-auto">
+      <table class="tbl" style="min-width:500px">
+        <thead><tr>
+          <th>#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>D</th><th>Net</th><th>Pts</th>
+        </tr></thead>
+        <tbody>
+        ${data.map((e,i) => `<tr ${i===0?'style="background:rgba(99,102,241,0.07)"':''}>
+          <td><span class="rank-${i+1} font-bold">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span></td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background:${e.team?.color||'#6366f1'}">${(e.team?.shortName||e.team?.name||'T').slice(0,2).toUpperCase()}</div>
+              <span class="font-semibold text-white text-xs">${esc(e.team?.name||'—')}</span>
+            </div>
+          </td>
+          <td class="text-slate-300">${e.played}</td>
+          <td class="text-emerald-400 font-semibold">${e.won}</td>
+          <td class="text-red-400">${e.lost}</td>
+          <td class="text-yellow-400">${e.drawn}</td>
+          <td class="${e.netScore>=0?'text-emerald-400':'text-red-400'} font-medium">${e.netScore>0?'+':''}${e.netScore}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="progress-bar w-12"><div class="progress-fill" style="width:${(e.points/Math.max(maxPts*1.2,1))*100}%"></div></div>
+              <span class="font-bold text-indigo-400">${e.points}</span>
+            </div>
+          </td>
+        </tr>`).join('')}
+        </tbody>
+      </table></div>`;
+  } catch (err) { el.innerHTML = errMsg(err.message); }
+}
+
+// ── Teams ────────────────────────────────────────────────────────────────────
+async function loadTeams() {
+  const el = document.getElementById('teams-content');
+  const tid = currentTournament?._id;
+  try {
+    const url = '/api/teams' + (tid ? `?tournament=${tid}` : '');
+    const { data } = await apiFetch(url);
+    if (!data.length) { el.innerHTML = noData('👥', 'No teams', 'No teams registered yet.'); return; }
+    el.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      ${data.map(t => `<div class="card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg" style="background:${t.color||'#6366f1'}">${(t.shortName||t.name||'T').slice(0,2).toUpperCase()}</div>
+          <div>
+            <div class="text-white font-bold">${esc(t.name)}</div>
+            <div class="text-slate-500 text-xs">${esc(t.city||'')}${t.captain?` • Captain: ${esc(t.captain)}`:''}</div>
+          </div>
+        </div>
+        ${(t.players||[]).length ? `<div class="space-y-1.5">
+          <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">Squad (${t.players.length})</div>
+          ${t.players.slice(0,6).map(p => `<div class="flex items-center justify-between text-xs">
+            <span class="text-slate-300">${esc(p.name)}</span>
+            <div class="flex gap-2">
+              ${p.jerseyNo ? `<span class="text-slate-600">#${p.jerseyNo}</span>` : ''}
+              <span class="text-indigo-400">${esc(p.role||'Player')}</span>
+            </div>
+          </div>`).join('')}
+          ${t.players.length > 6 ? `<div class="text-slate-600 text-xs">+${t.players.length-6} more</div>` : ''}
+        </div>` : '<p class="text-slate-600 text-xs">No player data added.</p>'}
+      </div>`).join('')}
+    </div>`;
+  } catch (err) { el.innerHTML = errMsg(err.message); }
+}
+
+// ── Utils ────────────────────────────────────────────────────────────────────
+function noData(icon, title, sub) {
+  return `<div class="text-center py-12">
+    <div class="text-4xl mb-3">${icon}</div>
+    <div class="text-white font-semibold mb-1">${title}</div>
+    <div class="text-slate-500 text-sm">${sub}</div>
+  </div>`;
+}
+function errMsg(msg) { return `<div class="text-center py-8 text-red-400">⚠️ ${esc(msg)}</div>`; }
+function esc(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(d) { if (!d) return '—'; return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function fmtDateShort(d) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtNum(n) { return n != null ? Number(n).toLocaleString('en-IN') : '0'; }
+
+
+// ── Rules & Format ──────────────────────────────────────────────────────────
+async function loadRules() {
+  const el = document.getElementById('rules-content');
+  const tid = currentTournament?._id;
+  if (!tid) { el.innerHTML = noData('📋', 'Select a tournament', 'Choose a tournament above.'); return; }
+  try {
+    const res = await apiFetch(`/api/settings/${tid}`);
+    const s = res.data;
+    const t = res.tournament;
+
+    const matchFormatLabels = {
+      single:'Single Match', bo3:'Best of 3', bo5:'Best of 5', bo7:'Best of 7',
+      sets:'Fixed Sets', halves:'2 Halves', quarters:'4 Quarters', innings:'Innings', periods:'3 Periods'
+    };
+
+    const infoCards = [
+      { icon:'🎮', label:'Match Format', value: matchFormatLabels[s.matchFormat] || s.matchFormat || 'Standard' },
+      { icon:'🏅', label:'Win Points', value: s.pointsWin ?? 2 },
+      { icon:'🟡', label:'Draw/Tie Points', value: s.pointsTie ?? 1 },
+      { icon:'❌', label:'Loss Points', value: s.pointsLoss ?? 0 },
+      s.useShorterFinalSet ? { icon:'⚡', label:'Final Set Points', value: s.finalSetPoints ?? 15 } : null,
+      s.mustWinBy2 ? { icon:'⚖️', label:'Win by 2 Rule', value: 'Active' } : null,
+      s.periodDurationMins > 0 ? { icon:'⏱', label:'Period Duration', value: `${s.periodDurationMins} min` } : null,
+      s.oversPerInnings > 0 ? { icon:'🏏', label:'Overs / Innings', value: `${s.oversPerInnings} overs` } : null,
+      (s.tiebreakerOrder||[]).length ? { icon:'⚖️', label:'Tiebreaker 1st', value: s.tiebreakerOrder[0] } : null,
+    ].filter(Boolean);
+
+    el.innerHTML = `
+      <div class="card mb-4">
+        <div class="text-white font-bold mb-3 flex items-center gap-2">🏟 ${esc(t?.sport||currentTournament?.sport||'Tournament')} — Match Configuration</div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          ${infoCards.map(c => `<div class="text-center p-3 rounded-xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)">
+            <div class="text-xl mb-1">${c.icon}</div>
+            <div class="text-white font-bold text-sm">${c.value}</div>
+            <div class="text-slate-500 text-xs">${c.label}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      ${s.rules ? `<div class="card">
+        <div class="text-white font-bold mb-3 flex items-center gap-2">📋 Official Rules</div>
+        <pre class="text-slate-300 text-xs leading-relaxed whitespace-pre-wrap font-mono" style="background:rgba(255,255,255,0.02);border-radius:8px;padding:14px">${esc(s.rules)}</pre>
+      </div>` : noData('📋', 'No rules set', 'The admin has not entered rules yet.')}
+    `;
+  } catch(err) { el.innerHTML = errMsg(err.message); }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadTournaments();
+// Auto-refresh live tab every 30s
+setInterval(() => { if (currentTab === 'live') loadLive(); }, 30000);
+</script>
+</body>
+</html>

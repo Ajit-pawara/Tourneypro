@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TourneyPro — Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *{font-family:'Inter',sans-serif;box-sizing:border-box}
+  body{background:#060610;min-height:100vh;overflow:hidden}
+  .glass{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07)}
+  .glow-btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);transition:all .3s}
+  .glow-btn:hover{box-shadow:0 0 30px rgba(99,102,241,0.5);transform:translateY(-1px)}
+  .input-dark{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#e2e8f0;transition:all .2s}
+  .input-dark:focus{outline:none;border-color:#6366f1;background:rgba(99,102,241,0.08);box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
+  .input-dark::placeholder{color:#475569}
+  .tab-active{background:rgba(99,102,241,0.2);border-bottom:2px solid #6366f1;color:#a5b4fc}
+  .tab-inactive{color:#64748b;border-bottom:2px solid transparent}
+  .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.15;pointer-events:none}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+  .float{animation:float 6s ease-in-out infinite}
+  .error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+  .success-msg{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7}
+  #toast{position:fixed;top:20px;right:20px;z-index:9999;transition:all .3s;transform:translateY(-100px);opacity:0}
+  #toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body class="flex items-center justify-center min-h-screen px-4">
+
+<!-- Background orbs -->
+<div class="orb w-96 h-96 bg-indigo-600 top-0 left-0 float" style="animation-delay:0s"></div>
+<div class="orb w-72 h-72 bg-violet-600 bottom-0 right-0 float" style="animation-delay:2s"></div>
+<div class="orb w-48 h-48 bg-blue-600 top-1/2 left-1/2 float" style="animation-delay:4s"></div>
+
+<!-- Toast -->
+<div id="toast" class="rounded-xl px-5 py-3 text-sm font-medium shadow-2xl"></div>
+
+<!-- Login Card -->
+<div class="glass rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
+  <!-- Logo -->
+  <div class="flex items-center justify-center mb-8">
+    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3 shadow-lg">
+      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-white font-bold text-xl tracking-tight">TourneyPro</h1>
+      <p class="text-slate-500 text-xs">Tournament Management</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex mb-6 border-b border-slate-800">
+    <button onclick="switchTab('admin')" id="tab-admin" class="flex-1 py-2.5 text-sm font-semibold transition-all tab-active">
+      🔐 Admin Login
+    </button>
+    <button onclick="switchTab('player')" id="tab-player" class="flex-1 py-2.5 text-sm font-semibold transition-all tab-inactive">
+      🎮 Player Access
+    </button>
+  </div>
+
+  <!-- Admin Form -->
+  <div id="form-admin">
+    <div class="space-y-4">
+      <div>
+        <label class="block text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1.5">Username</label>
+        <input id="admin-username" type="text" placeholder="Enter admin username" class="input-dark w-full rounded-xl px-4 py-3 text-sm" />
+      </div>
+      <div>
+        <label class="block text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1.5">Password</label>
+        <input id="admin-password" type="password" placeholder="Enter password" class="input-dark w-full rounded-xl px-4 py-3 text-sm" onkeydown="if(event.key==='Enter')adminLogin()" />
+      </div>
+      <div id="admin-error" class="hidden error-msg rounded-xl px-4 py-3 text-sm"></div>
+      <button onclick="adminLogin()" id="admin-btn" class="glow-btn w-full py-3 rounded-xl text-white font-semibold text-sm mt-2">
+        Sign In to Dashboard →
+      </button>
+    </div>
+    <p class="text-center text-slate-600 text-xs mt-6">Default: admin / admin123 (run npm run seed first)</p>
+  </div>
+
+  <!-- Player Form -->
+  <div id="form-player" class="hidden">
+    <div class="space-y-4">
+      <div class="glass rounded-xl p-4 mb-4">
+        <p class="text-slate-400 text-xs text-center">No password required! Just enter your name to browse tournaments, schedules, and standings.</p>
+      </div>
+      <div>
+        <label class="block text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1.5">Your Name</label>
+        <input id="player-name" type="text" placeholder="Enter your name" class="input-dark w-full rounded-xl px-4 py-3 text-sm" />
+      </div>
+      <div>
+        <label class="block text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1.5">Team Name <span class="text-slate-600 normal-case font-normal">(optional)</span></label>
+        <input id="player-team" type="text" placeholder="Enter your team name" class="input-dark w-full rounded-xl px-4 py-3 text-sm" onkeydown="if(event.key==='Enter')playerLogin()" />
+      </div>
+      <div id="player-error" class="hidden error-msg rounded-xl px-4 py-3 text-sm"></div>
+      <button onclick="playerLogin()" id="player-btn" class="glow-btn w-full py-3 rounded-xl text-white font-semibold text-sm mt-2">
+        View Tournaments →
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+function switchTab(tab) {
+  document.getElementById('form-admin').classList.toggle('hidden', tab !== 'admin');
+  document.getElementById('form-player').classList.toggle('hidden', tab !== 'player');
+  document.getElementById('tab-admin').className = `flex-1 py-2.5 text-sm font-semibold transition-all ${tab==='admin'?'tab-active':'tab-inactive'}`;
+  document.getElementById('tab-player').className = `flex-1 py-2.5 text-sm font-semibold transition-all ${tab==='player'?'tab-active':'tab-inactive'}`;
+}
+
+function showToast(msg, type='error') {
+  const t = document.getElementById('toast');
+  t.className = `rounded-xl px-5 py-3 text-sm font-medium shadow-2xl show ${type==='error'?'error-msg':'success-msg'}`;
+  t.textContent = msg;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function adminLogin() {
+  const username = document.getElementById('admin-username').value.trim();
+  const password = document.getElementById('admin-password').value;
+  const btn = document.getElementById('admin-btn');
+  const err = document.getElementById('admin-error');
+
+  if (!username || !password) { showErr(err, 'Please fill in both fields.'); return; }
+
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/auth/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      showToast('Welcome back, Admin!', 'success');
+      setTimeout(() => window.location.href = '/admin', 800);
+    } else {
+      showErr(err, data.message);
+    }
+  } catch { showErr(err, 'Server error. Is the backend running?'); }
+  finally { btn.textContent = 'Sign In to Dashboard →'; btn.disabled = false; }
+}
+
+async function playerLogin() {
+  const name = document.getElementById('player-name').value.trim();
+  const teamName = document.getElementById('player-team').value.trim();
+  const btn = document.getElementById('player-btn');
+  const err = document.getElementById('player-error');
+
+  if (!name) { showErr(err, 'Please enter your name.'); return; }
+
+  btn.textContent = 'Entering...'; btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/auth/player-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, teamName })
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      showToast('Welcome, ' + name + '!', 'success');
+      setTimeout(() => window.location.href = '/player', 800);
+    } else {
+      showErr(err, data.message);
+    }
+  } catch { showErr(err, 'Server error. Is the backend running?'); }
+  finally { btn.textContent = 'View Tournaments →'; btn.disabled = false; }
+}
+
+function showErr(el, msg) {
+  el.textContent = msg; el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 4000);
+}
+
+// Auto-redirect if already logged in
+const user = JSON.parse(localStorage.getItem('user') || 'null');
+if (user?.role === 'admin') window.location.href = '/admin';
+else if (user?.role === 'player') window.location.href = '/player';
+</script>
+</body>
+</html>

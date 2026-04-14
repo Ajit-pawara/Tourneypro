@@ -1,0 +1,274 @@
+# 🚀 COMPLETE FREE HOSTING GUIDE
+# For Zorin OS → GitHub → MongoDB Atlas → Render.com
+# 100% Free | No Credit Card | Live in ~30 minutes
+# ============================================================
+
+# ════════════════════════════════════════════════════════════
+# STEP 1 — INSTALL TOOLS ON ZORIN OS
+# ════════════════════════════════════════════════════════════
+
+# Open Terminal (Ctrl+Alt+T) and run these one by one:
+
+# Update system first
+sudo apt update && sudo apt upgrade -y
+
+# Install Git
+sudo apt install -y git
+
+# Verify Git installed
+git --version
+# Should show: git version 2.x.x
+
+# Install Node.js (v20 LTS)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Verify Node installed
+node --version    # Should show: v20.x.x
+npm --version     # Should show: 10.x.x
+
+# ════════════════════════════════════════════════════════════
+# STEP 2 — CREATE FREE ACCOUNTS (do in browser)
+# ════════════════════════════════════════════════════════════
+
+# Account 1: GitHub (stores your code)
+# → Go to: https://github.com/signup
+# → Sign up with email
+# → Verify email
+
+# Account 2: MongoDB Atlas (free cloud database)
+# → Go to: https://www.mongodb.com/cloud/atlas/register
+# → Sign up with email
+# → Choose FREE plan (M0)
+
+# Account 3: Render.com (free hosting)
+# → Go to: https://dashboard.render.com/register
+# → Sign up with GitHub (easier - click "Sign up with GitHub")
+
+# ════════════════════════════════════════════════════════════
+# STEP 3 — SETUP MONGODB ATLAS (Free Cloud Database)
+# ════════════════════════════════════════════════════════════
+
+# After logging into MongoDB Atlas:
+
+# 1. Click "Build a Database"
+# 2. Choose "M0 FREE" tier
+# 3. Select provider: AWS
+# 4. Select region closest to you (e.g. Mumbai ap-south-1)
+# 5. Click "Create"
+
+# 6. Create database user:
+#    Username: tourneyAdmin
+#    Password: (click "Autogenerate" and COPY the password)
+#    Click "Create User"
+
+# 7. Set Network Access:
+#    Click "Add IP Address"
+#    Click "Allow Access from Anywhere" (0.0.0.0/0)
+#    Click "Confirm"
+
+# 8. Get Connection String:
+#    Click "Connect" → "Drivers"
+#    Copy the string that looks like:
+#    mongodb+srv://tourneyAdmin:<password>@cluster0.xxxxx.mongodb.net/
+
+# 9. Replace <password> with your actual password
+# Your final MONGODB_URI will look like:
+# mongodb+srv://tourneyAdmin:YourPassword123@cluster0.abc123.mongodb.net/tournament_db
+
+# SAVE THIS STRING — you'll need it in Step 6
+
+# ════════════════════════════════════════════════════════════
+# STEP 4 — PREPARE YOUR PROJECT FILES
+# ════════════════════════════════════════════════════════════
+
+# Extract the tournament-app-fixed.zip you downloaded
+# Open terminal in that folder, then:
+
+cd ~/Downloads
+unzip tournament-app-fixed.zip
+cd tournament-app
+
+# Create a .gitignore file to exclude sensitive/large files
+cat > .gitignore << 'EOF'
+node_modules/
+*.env
+.env
+*.log
+.DS_Store
+EOF
+
+# Create the backend .env file for PRODUCTION
+# (Replace the values with your real ones)
+cat > backend/.env << 'EOF'
+PORT=5000
+MONGODB_URI=mongodb+srv://tourneyAdmin:YourPassword123@cluster0.abc123.mongodb.net/tournament_db
+JWT_SECRET=TourneyPro_SuperSecret_Key_2024_ChangeThis_xK9mP2qL8nR5
+NODE_ENV=production
+EOF
+
+# NOTE: Edit backend/.env with your REAL MongoDB URI from Step 3
+# Use the text editor: gedit backend/.env
+
+# ════════════════════════════════════════════════════════════
+# STEP 5 — PUSH CODE TO GITHUB
+# ════════════════════════════════════════════════════════════
+
+# Configure Git with your details (use your GitHub email)
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+
+# Initialize git in the project
+cd ~/Downloads/tournament-app
+git init
+git add .
+git commit -m "Initial commit - TourneyPro Tournament Management System"
+
+# Go to GitHub.com and:
+# 1. Click the "+" button (top right) → "New repository"
+# 2. Repository name: tournament-app
+# 3. Make it PUBLIC
+# 4. Do NOT add README (we already have files)
+# 5. Click "Create repository"
+
+# GitHub will show you commands. Run these (replace YOUR_USERNAME):
+git remote add origin https://github.com/YOUR_USERNAME/tournament-app.git
+git branch -M main
+git push -u origin main
+
+# It will ask for GitHub username and password.
+# NOTE: Use a Personal Access Token as password, not your GitHub password!
+# Get token: GitHub → Settings → Developer settings → Personal access tokens → Generate new token
+# Give it "repo" permission, copy the token and use it as password
+
+# ════════════════════════════════════════════════════════════
+# STEP 6 — DEPLOY ON RENDER.COM (Free Hosting)
+# ════════════════════════════════════════════════════════════
+
+# Go to: https://dashboard.render.com
+# (You signed up with GitHub in Step 2)
+
+# 1. Click "New +" → "Web Service"
+# 2. Click "Connect a repository"
+# 3. Find and select your "tournament-app" repo
+# 4. Click "Connect"
+
+# Fill in these settings:
+#
+#   Name:               tournament-app
+#   Region:             Singapore (or closest to you)
+#   Branch:             main
+#   Root Directory:     backend
+#   Runtime:            Node
+#   Build Command:      npm install
+#   Start Command:      npm start
+#   Instance Type:      Free
+#
+
+# 5. Scroll down to "Environment Variables"
+#    Click "Add Environment Variable" for each:
+#
+#   Key: MONGODB_URI
+#   Value: mongodb+srv://tourneyAdmin:YourPassword@cluster0.xxx.mongodb.net/tournament_db
+#
+#   Key: JWT_SECRET
+#   Value: TourneyPro_SuperSecret_Key_2024_ChangeThis_xK9mP2qL8nR5
+#
+#   Key: NODE_ENV
+#   Value: production
+#
+#   Key: PORT
+#   Value: 5000
+
+# 6. Click "Create Web Service"
+# 7. Wait 3-5 minutes for it to build and deploy
+# 8. You'll see "Your service is live" with a URL like:
+#    https://tournament-app-xxxx.onrender.com
+
+# ════════════════════════════════════════════════════════════
+# STEP 7 — CREATE ADMIN USER IN CLOUD DATABASE
+# ════════════════════════════════════════════════════════════
+
+# After Render deployment is live, open terminal on your Zorin OS:
+
+cd ~/Downloads/tournament-app/backend
+
+# Install dependencies locally
+npm install
+
+# Run the seed script (it will connect to your Atlas cloud DB)
+# Make sure your backend/.env has the correct MONGODB_URI
+npm run seed
+
+# You should see:
+# ✅ Connected to MongoDB
+# 🎉 Admin user created → username: admin | password: admin123
+
+# ════════════════════════════════════════════════════════════
+# STEP 8 — TEST YOUR LIVE SITE
+# ════════════════════════════════════════════════════════════
+
+# Your live URLs (replace with your actual Render URL):
+#
+#   🌐 Login:      https://tournament-app-xxxx.onrender.com
+#   📊 Admin:      https://tournament-app-xxxx.onrender.com/admin
+#   🎮 Player:     https://tournament-app-xxxx.onrender.com/player
+#
+#   Login: admin / admin123
+
+# ════════════════════════════════════════════════════════════
+# TROUBLESHOOTING
+# ════════════════════════════════════════════════════════════
+
+# Problem: "git push" asks for password and fails
+# Solution: Use Personal Access Token (see Step 5 note)
+
+# Problem: Render build fails
+# Solution: Check the build logs on Render dashboard
+#           Make sure Root Directory is set to "backend"
+
+# Problem: App loads but can't login / database errors
+# Solution: Check your MONGODB_URI in Render environment variables
+#           Make sure 0.0.0.0/0 is whitelisted in MongoDB Atlas
+
+# Problem: Render site is slow on first load
+# Solution: Free tier "spins down" after 15 min of inactivity
+#           First visit takes ~30 seconds to wake up (normal on free tier)
+#           Upgrade to $7/mo to avoid this
+
+# Problem: Changes not reflecting after push
+# Solution: Render auto-deploys on every git push to main branch
+#           Check Render dashboard → Deployments for status
+
+# ════════════════════════════════════════════════════════════
+# STEP 9 — UPDATING YOUR APP IN THE FUTURE
+# ════════════════════════════════════════════════════════════
+
+# Every time you make changes:
+cd ~/Downloads/tournament-app
+git add .
+git commit -m "Update: describe what you changed"
+git push
+
+# Render will automatically detect the push and redeploy!
+# Takes about 2-3 minutes to go live.
+
+# ════════════════════════════════════════════════════════════
+# OPTIONAL: CUSTOM DOMAIN (e.g. yourtournament.com)
+# ════════════════════════════════════════════════════════════
+
+# Buy domain from: Namecheap.com (~$10/year)
+# Then in Render dashboard:
+#   Settings → Custom Domains → Add Domain
+#   Follow DNS instructions Render gives you
+
+# ════════════════════════════════════════════════════════════
+# SUMMARY OF FREE SERVICES USED
+# ════════════════════════════════════════════════════════════
+
+# GitHub       → Stores your code (free forever)
+# MongoDB Atlas → Cloud database M0 (free forever, 512MB)
+# Render.com   → Hosts your Node.js app (free, sleeps after 15min)
+
+# Total cost: $0/month ✅
+# Supports: ~100 concurrent users on free tier

@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TourneyPro &mdash; Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{font-family:'Inter',sans-serif;box-sizing:border-box;margin:0;padding:0}
+body{background:#07071a;color:#e2e8f0;min-height:100vh;display:flex}
+#sidebar{width:248px;min-width:248px;background:#0b0b1e;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;z-index:50}
+.nav-sec{padding:5px 14px 2px;font-size:.6rem;font-weight:800;color:#2d3748;text-transform:uppercase;letter-spacing:.12em;margin-top:10px}
+.nav-btn{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;margin:1px 7px;cursor:pointer;transition:all .14s;color:#64748b;font-size:.81rem;font-weight:500;background:none;border:none;width:calc(100% - 14px);text-align:left}
+.nav-btn:hover{background:rgba(255,255,255,.04);color:#e2e8f0}
+.nav-btn.active{background:rgba(99,102,241,.13);color:#a5b4fc;border-left:2px solid #6366f1;padding-left:10px}
+.nvi{width:15px;height:15px;flex-shrink:0}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{background:#0b0b1e;border-bottom:1px solid rgba(255,255,255,.06);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#content{flex:1;overflow-y:auto;padding:20px}
+.card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px}
+.stat-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:14px;display:flex;align-items:center;gap:12px}
+.btn{padding:7px 13px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .14s;border:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.btn-primary:hover{box-shadow:0 0 14px rgba(99,102,241,.4);transform:translateY(-1px)}
+.btn-secondary{background:rgba(255,255,255,.05);color:#e2e8f0;border:1px solid rgba(255,255,255,.07)}
+.btn-secondary:hover{background:rgba(255,255,255,.09)}
+.btn-danger{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.24)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-success{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.24)}
+.btn-warn{background:rgba(245,158,11,.1);color:#fcd34d;border:1px solid rgba(245,158,11,.24)}
+.btn-sm{padding:4px 9px;font-size:.72rem;border-radius:6px}
+.inp{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#e2e8f0;border-radius:8px;padding:8px 11px;width:100%;font-size:.81rem;transition:all .14s}
+.inp:focus{outline:none;border-color:#6366f1;background:rgba(99,102,241,.05);box-shadow:0 0 0 2px rgba(99,102,241,.1)}
+.inp::placeholder{color:#3d4d60}
+select.inp option{background:#0d0d1a;color:#e2e8f0}
+.lbl{display:block;font-size:.65rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;padding:8px 11px;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:#475569;border-bottom:1px solid rgba(255,255,255,.07)}
+.tbl td{padding:10px 11px;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.03)}
+.tbl tbody tr:hover td{background:rgba(255,255,255,.015)}
+.badge{padding:2px 7px;border-radius:20px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.badge-upcoming{background:rgba(99,102,241,.13);color:#a5b4fc}
+.badge-ongoing{background:rgba(16,185,129,.13);color:#6ee7b7}
+.badge-completed{background:rgba(100,116,139,.13);color:#94a3b8}
+.badge-live{background:rgba(239,68,68,.16);color:#fca5a5;animation:pulse 1.8s infinite}
+.badge-scheduled{background:rgba(245,158,11,.13);color:#fcd34d}
+.badge-league{background:rgba(139,92,246,.13);color:#c4b5fd}
+.badge-knockout{background:rgba(249,115,22,.13);color:#fdba74}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(5px);z-index:100;display:flex;align-items:center;justify-content:center;padding:14px;opacity:0;pointer-events:none;transition:opacity .18s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:#0d0d20;border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:22px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;transform:scale(.96);transition:transform .18s}
+.modal-overlay.open .modal-box{transform:scale(1)}
+#toast{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.ti{padding:10px 15px;border-radius:9px;font-size:.81rem;font-weight:500;max-width:290px;animation:sI .24s ease;box-shadow:0 8px 22px rgba(0,0,0,.6)}
+.ti-s{background:#064e3b;border:1px solid #10b981;color:#6ee7b7}
+.ti-e{background:#450a0a;border:1px solid #ef4444;color:#fca5a5}
+.ti-i{background:#1e1b4b;border:1px solid #6366f1;color:#a5b4fc}
+@keyframes sI{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spin{width:20px;height:20px;border:2px solid rgba(255,255,255,.08);border-top:2px solid #6366f1;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.section{display:none}.section.active{display:block}
+.pbar{background:rgba(255,255,255,.05);border-radius:999px;overflow:hidden;height:4px}
+.pfill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:999px}
+.tog{position:relative;width:38px;height:20px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.sl{position:absolute;inset:0;background:#1e293b;border-radius:999px;transition:.2s;border:1px solid rgba(255,255,255,.08)}
+.sl:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:50%;transform:translateY(-50%);background:#475569;border-radius:50%;transition:.2s}
+input:checked+.sl{background:rgba(99,102,241,.28);border-color:#6366f1}
+input:checked+.sl:before{transform:translate(16px,-50%);background:#6366f1}
+.trow{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px}
+.sp-card{border:2px solid rgba(255,255,255,.06);border-radius:9px;padding:10px 6px;cursor:pointer;transition:all .13s;text-align:center;background:rgba(255,255,255,.02)}
+.sp-card:hover{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.05)}
+.sp-card.sel{border-color:#6366f1;background:rgba(99,102,241,.11)}
+.si{width:48px;text-align:center;padding:5px 3px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#e2e8f0;border-radius:6px;font-size:.9rem;font-weight:700}
+.si:focus{outline:none;border-color:#6366f1}
+/* Leaderboard */
+.lb th{text-align:left;padding:10px 14px;font-size:.63rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#475569;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02)}
+.lb td{padding:12px 14px;font-size:.83rem;border-bottom:1px solid rgba(255,255,255,.03)}
+.lb tbody tr:hover td{background:rgba(99,102,241,.035)}
+.lb .top td{background:rgba(99,102,241,.05)}
+.np{color:#22c55e;font-size:.75rem;font-weight:700}
+.nn{color:#ef4444;font-size:.75rem;font-weight:700}
+.nz{color:#475569;font-size:.75rem}
+.pts{font-size:1.1rem;font-weight:800;color:#fff}
+.ed-inp{width:50px;background:rgba(255,255,255,.04);border:1px solid rgba(99,102,241,.35);color:#e2e8f0;border-radius:5px;padding:3px;text-align:center;font-size:.78rem}
+@media(max-width:768px){
+  #sidebar{position:fixed;height:100vh;transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  #content{padding:13px}
+  #stats-grid{grid-template-columns:1fr 1fr!important}
+}
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:11px">
+    <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg style="width:18px;height:18px;color:#fff" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+    </div>
+    <div><div style="color:#fff;font-weight:700;font-size:.88rem">TourneyPro</div><div style="color:#475569;font-size:.69rem">Admin Panel</div></div>
+  </div>
+  <nav style="flex:1;padding:6px 0;overflow-y:auto">
+    <div class="nav-sec">Overview</div>
+    <button class="nav-btn active" id="nav-dashboard" onclick="showSection('dashboard')">
+      <svg class="nvi" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      Dashboard
+    </button>
+    <div class="nav-sec">Manage</div>
+    <button class="nav-btn" id="nav-tournaments" onclick="showSection('tournaments')">
+      <svg class="nvi" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      Tournaments
+    </button>
+    <button class="nav-btn" id="nav-teams" onclick="showSection('teams')">
+      <svg class="nvi" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Teams
+    </button>
+    <button class="nav-btn" id="nav-matches" onclick="showSection('matches')">
+      <svg class="nvi" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Matches
+    </button>
+    <button class="nav-btn" id="nav-leaderboard" onclick="showSection('leaderboard')">
+      <svg class="nvi" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Leaderboard
+    </button>
+    <button class="nav-btn" id="nav-settings" onclick="showSection('settings')">
+      <svg class="nvi" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Sport Settings
+    </button>
+  </nav>
+  <div style="padding:11px 13px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px">
+    <div id="admin-avatar" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.74rem;font-weight:700;flex-shrink:0">A</div>
+    <div style="flex:1;min-width:0"><div id="admin-name" style="color:#fff;font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Admin</div><div style="color:#475569;font-size:.67rem">Administrator</div></div>
+    <button onclick="logout()" title="Logout" style="color:#475569;background:none;border:none;cursor:pointer;padding:3px">
+      <svg style="width:15px;height:15px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+    </button>
+  </div>
+</aside>
+
+<main id="main">
+  <header id="topbar">
+    <div style="display:flex;align-items:center;gap:11px">
+      <button onclick="document.getElementById('sidebar').classList.toggle('open')" style="color:#64748b;background:none;border:none;cursor:pointer;display:none" id="menu-btn">
+        <svg style="width:20px;height:20px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div><h2 id="page-title" style="color:#fff;font-weight:700;font-size:.98rem">Dashboard</h2><p id="page-sub" style="color:#475569;font-size:.69rem">Overview</p></div>
+    </div>
+    <div id="topbar-avatar" style="width:31px;height:31px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.76rem;font-weight:700;cursor:pointer">A</div>
+  </header>
+
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <div id="section-dashboard" class="section active">
+      <div id="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px">
+        <div class="stat-card" style="grid-column:1/-1;justify-content:center;padding:22px"><div class="spin"></div><span style="color:#475569;margin-left:10px">Loading...</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px">
+        <div class="card"><h3 style="color:#fff;font-weight:600;margin-bottom:10px;font-size:.85rem;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block"></span>Recent Results</h3><div id="dash-recent"><div class="spin" style="margin:12px auto;display:block"></div></div></div>
+        <div class="card"><h3 style="color:#fff;font-weight:600;margin-bottom:10px;font-size:.85rem;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block"></span>Upcoming</h3><div id="dash-upcoming"><div class="spin" style="margin:12px auto;display:block"></div></div></div>
+      </div>
+    </div>
+
+    <!-- TOURNAMENTS -->
+    <div id="section-tournaments" class="section">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button id="new-tournament-btn" onclick="openTournamentModal()" class="btn btn-primary">
+          <svg style="width:14px;height:14px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          New Tournament
+        </button>
+      </div>
+      <div id="t-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+        <div class="card" style="grid-column:1/-1;display:flex;justify-content:center;padding:32px"><div class="spin"></div></div>
+      </div>
+    </div>
+
+    <!-- TEAMS -->
+    <div id="section-teams" class="section">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button onclick="openTeamModal()" class="btn btn-primary">
+          <svg style="width:14px;height:14px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          New Team
+        </button>
+      </div>
+      <div class="card"><table class="tbl"><thead><tr><th>Team</th><th>Captain</th><th>Players</th><th>Tournaments</th><th style="text-align:right">Actions</th></tr></thead><tbody id="teams-tbody"><tr><td colspan="5" style="text-align:center;padding:24px;color:#475569"><div class="spin" style="margin:0 auto 8px"></div>Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- MATCHES -->
+    <div id="section-matches" class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="mf-t" onchange="loadMatches()" class="inp" style="width:190px"><option value="">All Tournaments</option></select>
+          <select id="mf-s" onchange="loadMatches()" class="inp" style="width:130px"><option value="">All Status</option><option value="scheduled">Scheduled</option><option value="live">Live</option><option value="completed">Completed</option></select>
+        </div>
+        <button onclick="openMatchModal()" class="btn btn-primary">
+          <svg style="width:14px;height:14px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          Add Match
+        </button>
+      </div>
+      <div class="card"><table class="tbl"><thead><tr><th>Match</th><th>Tournament</th><th>Date</th><th>Round</th><th>Score</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody id="matches-tbody"><tr><td colspan="7" style="text-align:center;padding:24px;color:#475569"><div class="spin" style="margin:0 auto 8px"></div>Loading...</td></tr></tbody></table></div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div id="section-leaderboard" class="section">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap">
+        <select id="lb-sel" onchange="loadLeaderboard()" class="inp" style="flex:1;max-width:340px"><option value="">&#8212; Select Tournament &#8212;</option></select>
+        <div style="display:flex;gap:7px;margin-left:auto">
+          <button id="lb-edit-btn" onclick="openManualEdit()" class="btn btn-warn btn-sm" style="display:none">&#9999;&#65039; Manual Edit</button>
+          <button id="lb-reset-btn" onclick="resetLeaderboard()" class="btn btn-danger btn-sm" style="display:none">&#8635; Reset Table</button>
+          <button id="lb-del-btn" onclick="deleteLbTournament()" class="btn btn-danger btn-sm" style="display:none">&#128465; Delete Tournament</button>
+        </div>
+      </div>
+      <div id="lb-card" class="card">
+        <div style="text-align:center;padding:44px;color:#475569">
+          <svg style="width:38px;height:38px;margin:0 auto 10px;opacity:.2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Select a tournament to view the leaderboard.
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="section-settings" class="section">
+      <div class="card" style="margin-bottom:14px">
+        <label class="lbl">Tournament to Configure</label>
+        <select id="st-sel" onchange="loadSettings()" class="inp"><option value="">&#8212; select a tournament &#8212;</option></select>
+      </div>
+      <div id="settings-panel" style="display:none">
+        <!-- Sport Presets -->
+        <div class="card" style="margin-bottom:13px">
+          <div style="font-size:.62rem;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;display:flex;align-items:center;gap:7px">&#9889; Quick Sport Presets<span style="flex:1;height:1px;background:rgba(99,102,241,.2)"></span></div>
+          <p style="color:#475569;font-size:.73rem;margin-bottom:10px">One click to apply recommended settings, then fine-tune manually.</p>
+          <div id="sport-presets" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px"></div>
+        </div>
+        <!-- Match Format -->
+        <div class="card" style="margin-bottom:13px">
+          <div style="font-size:.62rem;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:11px;display:flex;align-items:center;gap:7px">&#127919; Match Format<span style="flex:1;height:1px;background:rgba(99,102,241,.2)"></span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label class="lbl">Match Type</label>
+              <select id="s-fmt" onchange="onFmtChange()" class="inp">
+                <option value="single">Single Game (Football / Hockey)</option>
+                <option value="sets">Sets / Best of N (Volleyball / Badminton)</option>
+                <option value="innings">Innings (Cricket)</option>
+                <option value="periods">Timed Periods (Basketball)</option>
+              </select>
+            </div>
+            <div id="sw-bo"><label class="lbl">Best Of</label>
+              <select id="s-bo" onchange="onBoChange()" class="inp">
+                <option value="1">Best of 1</option><option value="3">Best of 3 (First to 2)</option>
+                <option value="5">Best of 5 (First to 3)</option><option value="7">Best of 7</option>
+              </select>
+            </div>
+            <div id="sw-sp"><label class="lbl">Regular Set Points</label><input id="s-dsp" type="number" min="1" max="99" class="inp" placeholder="25"/></div>
+            <div id="sw-fp"><label class="lbl" id="lbl-fp">Final Set Points</label><input id="s-fsp" type="number" min="1" max="99" class="inp" placeholder="15"/></div>
+            <div id="sw-per" style="display:none"><label class="lbl">Periods / Quarters</label>
+              <select id="s-per" class="inp"><option value="2">2 Halves</option><option value="4">4 Quarters</option><option value="3">3 Periods</option></select>
+            </div>
+            <div id="sw-inn" style="display:none"><label class="lbl">Innings Per Side</label>
+              <select id="s-inn" class="inp"><option value="1">1 Innings (T20)</option><option value="2">2 Innings (Test)</option></select>
+            </div>
+            <div id="sw-ovr" style="display:none"><label class="lbl">Overs Per Innings</label><input id="s-ovr" type="number" min="1" class="inp" placeholder="20"/></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:11px">
+            <div id="sw-short" class="trow"><div><div style="color:#fff;font-size:.82rem;font-weight:500">Shorter Final Set</div><div style="color:#475569;font-size:.71rem">Deciding set uses fewer points</div></div><label class="tog"><input type="checkbox" id="s-shorter"><span class="sl"></span></label></div>
+            <div id="sw-by2" class="trow"><div><div style="color:#fff;font-size:.82rem;font-weight:500">Must Win by 2 Points</div><div style="color:#475569;font-size:.71rem">Standard deuce rule</div></div><label class="tog"><input type="checkbox" id="s-by2"><span class="sl"></span></label></div>
+            <div class="trow"><div><div style="color:#fff;font-size:.82rem;font-weight:500">Allow Penalty Shootout</div><div style="color:#475569;font-size:.71rem">For drawn knockout matches</div></div><label class="tog"><input type="checkbox" id="s-shoot"><span class="sl"></span></label></div>
+          </div>
+        </div>
+        <!-- Points System -->
+        <div class="card" style="margin-bottom:13px">
+          <div style="font-size:.62rem;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:11px;display:flex;align-items:center;gap:7px">&#127885; Points System<span style="flex:1;height:1px;background:rgba(99,102,241,.2)"></span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:11px">
+            <div class="card" style="text-align:center;padding:12px"><div style="font-size:1.3rem;margin-bottom:3px">&#127942;</div><div class="lbl" style="margin-bottom:5px">Win</div><input id="s-pw" type="number" min="0" max="99" value="3" oninput="updatePreview()" style="width:52px;text-align:center;padding:5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#e2e8f0;border-radius:7px;font-size:1.1rem;font-weight:800"/></div>
+            <div class="card" style="text-align:center;padding:12px"><div style="font-size:1.3rem;margin-bottom:3px">&#10060;</div><div class="lbl" style="margin-bottom:5px">Loss</div><input id="s-pl" type="number" min="0" max="99" value="0" oninput="updatePreview()" style="width:52px;text-align:center;padding:5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#e2e8f0;border-radius:7px;font-size:1.1rem;font-weight:800"/></div>
+            <div class="card" style="text-align:center;padding:12px"><div style="font-size:1.3rem;margin-bottom:3px">&#129309;</div><div class="lbl" style="margin-bottom:5px">Draw/Tie</div><input id="s-pt" type="number" min="0" max="99" value="1" oninput="updatePreview()" style="width:52px;text-align:center;padding:5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#e2e8f0;border-radius:7px;font-size:1.1rem;font-weight:800"/></div>
+            <div class="card" style="text-align:center;padding:12px"><div style="font-size:1.3rem;margin-bottom:3px">&#9889;</div><div class="lbl" style="margin-bottom:3px">Straight Win Bonus</div><input id="s-pb" type="number" min="0" max="99" value="0" oninput="updatePreview()" style="width:52px;text-align:center;padding:5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#e2e8f0;border-radius:7px;font-size:1.1rem;font-weight:800"/><div style="color:#475569;font-size:.63rem;margin-top:3px">For 3-0 / 2-0 win</div></div>
+          </div>
+          <div class="trow" style="margin-bottom:8px">
+            <div><div style="color:#fff;font-size:.82rem;font-weight:500">Close Win Points Override</div><div style="color:#475569;font-size:.71rem">2-1 / 3-2 wins get a different point total (e.g. volleyball: straight=3pts, close=2pts)</div></div>
+            <label class="tog"><input type="checkbox" id="s-ucw" onchange="onCwToggle()"><span class="sl"></span></label>
+          </div>
+          <div id="sw-cw" style="display:none" class="card">
+            <label class="lbl">Total Points for Close Win Winner</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:5px">
+              <input id="s-pcw" type="number" min="0" max="99" class="inp" placeholder="2" oninput="updatePreview()" style="max-width:100px"/>
+              <div style="color:#475569;font-size:.72rem">Loser still gets &quot;Loss&quot; points. E.g. volleyball: straight win=3, close win=2.</div>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <div class="lbl" style="margin-bottom:7px">Live Points Preview</div>
+            <div id="pts-preview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px"></div>
+          </div>
+        </div>
+        <!-- Tiebreakers -->
+        <div class="card" style="margin-bottom:13px">
+          <div style="font-size:.62rem;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:7px">&#9878;&#65039; Tiebreakers<span style="flex:1;height:1px;background:rgba(99,102,241,.2)"></span></div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div class="trow"><span style="color:#fff;font-size:.82rem">1st &#8212; Tournament Points <span style="color:#475569;font-size:.74rem">(always first)</span></span><span class="badge badge-upcoming">Fixed</span></div>
+            <div class="trow"><span style="color:#fff;font-size:.82rem;font-weight:500">2nd Tiebreaker</span>
+              <select id="s-tb2" class="inp" style="width:200px">
+                <option value="netSets">Net Sets (Won&#8722;Lost)</option><option value="netPoints">Net Points (For&#8722;Against)</option>
+                <option value="won">Most Wins</option><option value="pointsFor">Points Scored</option><option value="straightWins">Straight Wins</option>
+              </select>
+            </div>
+            <div class="trow"><span style="color:#fff;font-size:.82rem;font-weight:500">3rd Tiebreaker</span>
+              <select id="s-tb3" class="inp" style="width:200px">
+                <option value="netPoints">Net Points (For&#8722;Against)</option><option value="netSets">Net Sets</option>
+                <option value="won">Most Wins</option><option value="pointsFor">Points Scored</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- Rules -->
+        <div class="card" style="margin-bottom:13px">
+          <div style="font-size:.62rem;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:7px">&#128203; Tournament Rules<span style="flex:1;height:1px;background:rgba(99,102,241,.2)"></span></div>
+          <textarea id="s-rules" rows="5" class="inp" style="resize:none" placeholder="Rules, regulations, eligibility..."></textarea>
+        </div>
+        <div style="display:flex;gap:9px">
+          <button onclick="saveSettings()" class="btn btn-primary" style="flex:1;justify-content:center;padding:11px">&#128190; Save All Settings</button>
+          <button onclick="loadSettings()" class="btn btn-secondary">&#8635; Reload</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+<div id="toast"></div>
+
+<!-- MODAL: Tournament -->
+<div id="modal-tournament" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 id="mt-title" style="color:#fff;font-weight:700;font-size:.94rem">Create Tournament</h3>
+      <button onclick="closeModal('modal-tournament')" style="color:#475569;background:none;border:none;cursor:pointer;font-size:1.2rem;line-height:1">&#215;</button>
+    </div>
+    <input type="hidden" id="mt-id"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div style="grid-column:1/-1"><label class="lbl">Tournament Name *</label><input id="mt-name" type="text" placeholder="e.g. Inter-College Volleyball 2024" class="inp"/></div>
+      <div><label class="lbl">Sport</label>
+        <select id="mt-sport" class="inp">
+          <option value="Volleyball">Volleyball</option><option value="Football">Football</option>
+          <option value="Basketball">Basketball</option><option value="Cricket">Cricket</option>
+          <option value="Hockey">Hockey</option><option value="Badminton">Badminton</option>
+          <option value="Table Tennis">Table Tennis</option><option value="General">General / Other</option>
+        </select>
+      </div>
+      <div><label class="lbl">Format *</label>
+        <select id="mt-format" class="inp"><option value="league">League (Points Table)</option><option value="knockout">Knockout (Elimination)</option></select>
+      </div>
+      <div><label class="lbl">Start Date *</label><input id="mt-start" type="date" class="inp"/></div>
+      <div><label class="lbl">End Date</label><input id="mt-end" type="date" class="inp"/></div>
+      <div><label class="lbl">Entry Fee (&#8377;)</label><input id="mt-ef" type="number" min="0" placeholder="0" class="inp"/></div>
+      <div><label class="lbl">Prize Pool (&#8377;)</label><input id="mt-pp" type="number" min="0" placeholder="0" class="inp"/></div>
+      <div style="grid-column:1/-1"><label class="lbl">Description</label><textarea id="mt-desc" rows="2" class="inp" style="resize:none" placeholder="Brief description..."></textarea></div>
+      <div><label class="lbl">Status</label>
+        <select id="mt-status" class="inp"><option value="upcoming">Upcoming</option><option value="ongoing">Ongoing</option><option value="completed">Completed</option></select>
+      </div>
+      <div><label class="lbl">Max Teams</label><input id="mt-max" type="number" min="2" placeholder="16" class="inp"/></div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:15px">
+      <button onclick="saveTournament()" class="btn btn-primary" style="flex:1;justify-content:center">Save Tournament</button>
+      <button onclick="closeModal('modal-tournament')" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Team -->
+<div id="modal-team" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 id="mte-title" style="color:#fff;font-weight:700;font-size:.94rem">Create Team</h3>
+      <button onclick="closeModal('modal-team')" style="color:#475569;background:none;border:none;cursor:pointer;font-size:1.2rem;line-height:1">&#215;</button>
+    </div>
+    <input type="hidden" id="mte-id"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div style="grid-column:1/-1"><label class="lbl">Team Name *</label><input id="mte-name" type="text" placeholder="e.g. GPK Department" class="inp"/></div>
+      <div><label class="lbl">Short Name</label><input id="mte-sn" type="text" placeholder="GPK" maxlength="5" class="inp"/></div>
+      <div><label class="lbl">Color</label><input id="mte-color" type="color" value="#6366f1" class="inp" style="height:38px;cursor:pointer"/></div>
+      <div><label class="lbl">Captain</label><input id="mte-cap" type="text" placeholder="Captain name" class="inp"/></div>
+      <div><label class="lbl">City / Dept</label><input id="mte-city" type="text" placeholder="Mumbai" class="inp"/></div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:15px">
+      <button onclick="saveTeam()" class="btn btn-primary" style="flex:1;justify-content:center">Save Team</button>
+      <button onclick="closeModal('modal-team')" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Match -->
+<div id="modal-match" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 id="mm-title" style="color:#fff;font-weight:700;font-size:.94rem">Schedule Match</h3>
+      <button onclick="closeModal('modal-match')" style="color:#475569;background:none;border:none;cursor:pointer;font-size:1.2rem;line-height:1">&#215;</button>
+    </div>
+    <input type="hidden" id="mm-id"/>
+    <div style="display:flex;flex-direction:column;gap:11px">
+      <div><label class="lbl">Tournament *</label><select id="mm-t" onchange="loadMatchTeams()" class="inp"><option value="">Select tournament...</option></select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+        <div><label class="lbl">Team 1 *</label><select id="mm-t1" class="inp"><option value="">Select...</option></select></div>
+        <div><label class="lbl">Team 2 *</label><select id="mm-t2" class="inp"><option value="">Select...</option></select></div>
+        <div><label class="lbl">Date &amp; Time *</label><input id="mm-date" type="datetime-local" class="inp"/></div>
+        <div><label class="lbl">Venue</label><input id="mm-venue" type="text" placeholder="Court / Stadium" class="inp"/></div>
+        <div><label class="lbl">Round</label><input id="mm-round" type="text" placeholder="League Stage" class="inp"/></div>
+        <div><label class="lbl">Status</label><select id="mm-status" class="inp"><option value="scheduled">Scheduled</option><option value="live">Live</option><option value="completed">Completed</option></select></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:15px">
+      <button onclick="saveMatch()" class="btn btn-primary" style="flex:1;justify-content:center">Save Match</button>
+      <button onclick="closeModal('modal-match')" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Result -->
+<div id="modal-result" class="modal-overlay">
+  <div class="modal-box" style="max-width:560px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 style="color:#fff;font-weight:700;font-size:.94rem">Update Match Result</h3>
+      <button onclick="closeModal('modal-result')" style="color:#475569;background:none;border:none;cursor:pointer;font-size:1.2rem;line-height:1">&#215;</button>
+    </div>
+    <input type="hidden" id="r-id"/><input type="hidden" id="r-fmt"/><input type="hidden" id="r-bo"/>
+    <div style="text-align:center;margin-bottom:12px">
+      <div id="r-teams" style="color:#fff;font-weight:700;font-size:1rem"></div>
+      <div id="r-date" style="color:#475569;font-size:.72rem;margin-top:2px"></div>
+      <div id="r-badge" style="margin-top:5px"></div>
+    </div>
+    <div id="r-single">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px">
+        <div><label id="r-l1" class="lbl">Team 1 Score</label><input id="r-s1" type="number" min="0" placeholder="0" class="inp" style="text-align:center;font-size:1.5rem;font-weight:800;padding:14px"/><input id="r-st1" type="text" placeholder="e.g. 185/4 (20)" class="inp" style="margin-top:6px;font-size:.79rem"/></div>
+        <div><label id="r-l2" class="lbl">Team 2 Score</label><input id="r-s2" type="number" min="0" placeholder="0" class="inp" style="text-align:center;font-size:1.5rem;font-weight:800;padding:14px"/><input id="r-st2" type="text" placeholder="e.g. 173/7 (20)" class="inp" style="margin-top:6px;font-size:.79rem"/></div>
+      </div>
+    </div>
+    <div id="r-sets" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="color:#fff;font-size:.82rem;font-weight:600">Set Scores</div>
+        <div id="r-tally" style="color:#a5b4fc;font-size:.79rem;font-weight:700"></div>
+      </div>
+      <div id="r-set-rows"></div>
+      <div id="r-winner-box" class="card" style="text-align:center;padding:9px;margin-top:9px;display:none">
+        <div id="r-winner-txt" style="color:#fff;font-weight:700"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:14px">
+      <button onclick="submitResult()" class="btn btn-primary" style="flex:1;justify-content:center;padding:11px">&#10003; Save Result &amp; Update Points</button>
+      <button onclick="closeModal('modal-result')" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Manage Tournament -->
+<div id="modal-manage" class="modal-overlay">
+  <div class="modal-box" style="max-width:580px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 id="mgd-title" style="color:#fff;font-weight:700;font-size:.94rem">Manage Tournament</h3>
+      <button onclick="closeModal('modal-manage')" style="color:#475569;background:none;border:none;cursor:pointer;font-size:1.2rem;line-height:1">&#215;</button>
+    </div>
+    <input type="hidden" id="mgd-id"/>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px">
+      <div class="card" style="text-align:center"><div style="color:#475569;font-size:.66rem">Entry</div><div id="mgd-entry" style="color:#fff;font-weight:700">&#8212;</div></div>
+      <div class="card" style="text-align:center"><div style="color:#475569;font-size:.66rem">Prize</div><div id="mgd-prize" style="color:#fbbf24;font-weight:700">&#8212;</div></div>
+      <div class="card" style="text-align:center"><div style="color:#475569;font-size:.66rem">Format</div><div id="mgd-fmt" style="color:#a5b4fc;font-weight:700">&#8212;</div></div>
+    </div>
+    <div class="card" style="margin-bottom:11px">
+      <div style="color:#fff;font-size:.82rem;font-weight:600;margin-bottom:9px">Add Team to Tournament</div>
+      <div style="display:flex;gap:9px"><select id="mgd-sel" class="inp" style="flex:1"><option value="">Select team...</option></select><button onclick="addTeamToT()" class="btn btn-primary btn-sm">Add</button></div>
+    </div>
+    <div class="card" style="margin-bottom:11px">
+      <div style="color:#fff;font-size:.82rem;font-weight:600;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between">Enrolled Teams <span id="mgd-cnt" class="badge badge-upcoming">0</span></div>
+      <div id="mgd-list" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <button onclick="generateFixtures()" class="btn btn-primary" style="width:100%;justify-content:center">&#9889; Auto-Generate Fixtures</button>
+  </div>
+</div>
+
+<!-- MODAL: Manual Points Edit -->
+<div id="modal-edit" class="modal-overlay">
+  <div class="modal-box" style="max-width:640px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h3 style="color:#fff;font-weight:700;font-size:.94rem">&#9999;&#65039; Manual Points Edit</h3>
+      <button onclick="closeModal('modal-edit')" style="color:#475569;background:none;border:none;cursor:pointer;font-size:1.2rem;line-height:1">&#215;</button>
+    </div>
+    <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:9px;margin-bottom:12px;font-size:.76rem;color:#fcd34d">&#9888;&#65039; Manual edits override auto-calculated values. Affects leaderboard immediately.</div>
+    <div style="overflow-x:auto">
+      <table class="tbl" style="min-width:540px">
+        <thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>D</th><th>For</th><th>Ag</th><th>Pts</th><th></th></tr></thead>
+        <tbody id="edit-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GLOBALS
+// ============================================================
+const API = '';
+let token = localStorage.getItem('token');
+let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+let allTeams = [], allTournaments = [];
+let _rMatch = null, _lbTid = null;
+
+// Guard
+if (!token || currentUser.role !== 'admin') window.location.href = '/';
+
+const aH = () => ({'Content-Type':'application/json','Authorization':'Bearer '+token});
+function logout(){localStorage.clear();window.location.href='/';}
+
+const PRESETS = {
+  Volleyball:{icon:'&#127952;',matchFormat:'sets',bestOf:3,setsToWin:2,defaultSetPoints:25,finalSetPoints:15,useShorterFinalSet:true,mustWinBy2:true,pointsWin:3,pointsLoss:0,pointsTie:0,pointsBonusStraight:0,pointsCloseWin:2,useCloseWinPoints:true,tiebreakerOrder:['points','netSets','netPoints','straightWins']},
+  Football:  {icon:'&#9917;', matchFormat:'single',bestOf:1,pointsWin:3,pointsLoss:0,pointsTie:1,useCloseWinPoints:false,tiebreakerOrder:['points','netPoints','won','pointsFor']},
+  Basketball:{icon:'&#127936;',matchFormat:'periods',periodCount:4,bestOf:1,pointsWin:2,pointsLoss:0,pointsTie:0,useCloseWinPoints:false,tiebreakerOrder:['points','netPoints','won']},
+  Cricket:   {icon:'&#127959;',matchFormat:'innings',inningsPerSide:1,oversPerInnings:20,bestOf:1,pointsWin:2,pointsLoss:0,pointsTie:1,useCloseWinPoints:false,tiebreakerOrder:['points','netPoints','won']},
+  Hockey:    {icon:'&#127951;',matchFormat:'periods',periodCount:2,bestOf:1,pointsWin:3,pointsLoss:0,pointsTie:1,useCloseWinPoints:false,hasShootout:true,tiebreakerOrder:['points','netPoints','won','pointsFor']},
+  Badminton: {icon:'&#127992;',matchFormat:'sets',bestOf:3,setsToWin:2,defaultSetPoints:21,finalSetPoints:21,useShorterFinalSet:false,mustWinBy2:true,pointsWin:2,pointsLoss:0,pointsTie:0,useCloseWinPoints:false,tiebreakerOrder:['points','netSets','straightWins']},
+};
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth < 768) {
+    document.getElementById('menu-btn').style.display = 'block';
+  }
+  if (currentUser.username) {
+    const av = currentUser.username[0].toUpperCase();
+    document.getElementById('admin-name').textContent = currentUser.username;
+    document.getElementById('admin-avatar').textContent = av;
+    document.getElementById('topbar-avatar').textContent = av;
+  }
+  buildPresets();
+  loadDashboard();
+  loadAllData();
+});
+
+async function loadAllData() {
+  await Promise.all([loadAllTournaments(), loadAllTeams()]);
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type='info') {
+  const t = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = 'ti ti-' + (type==='success'?'s':type==='error'?'e':'i');
+  el.textContent = msg;
+  t.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity='0'; el.style.transform='translateX(100%)';
+    setTimeout(()=>el.remove(), 300);
+  }, 3800);
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target===m) m.classList.remove('open'); });
+});
+
+// ============================================================
+// API
+// ============================================================
+async function api(url, opts={}) {
+  const res = await fetch(API+url, {...opts, headers:{...aH(),...(opts.headers||{})}});
+  const d = await res.json();
+  if (!d.success) throw new Error(d.message || 'Request failed');
+  return d;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const PG = {
+  dashboard:   ['Dashboard','Overview of your tournaments'],
+  tournaments: ['Tournaments','Create and manage tournaments'],
+  teams:       ['Teams','Manage teams and squads'],
+  matches:     ['Matches','Schedule and update results'],
+  leaderboard: ['Leaderboard','Live standings and rankings'],
+  settings:    ['Sport Settings','Configure rules and scoring per tournament'],
+};
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('section-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.getElementById('page-title').textContent = PG[name][0];
+  document.getElementById('page-sub').textContent   = PG[name][1];
+  if (name==='dashboard')   loadDashboard();
+  if (name==='tournaments') loadTournaments();
+  if (name==='teams')       loadTeamsTable();
+  if (name==='matches')     { populateMatchFilters(); loadMatches(); }
+  if (name==='leaderboard') populateLbSel();
+  if (name==='settings')    populateStSel();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  try {
+    const {data} = await api('/api/dashboard/stats');
+    const s = data.stats;
+    document.getElementById('stats-grid').innerHTML =
+      sc('&#127942;','Tournaments',s.totalTournaments,s.ongoingTournaments+' ongoing','#6366f1') +
+      sc('&#128101;','Teams',s.totalTeams,'Registered','#8b5cf6') +
+      sc('&#9889;','Played',s.completedMatches,s.upcomingMatches+' upcoming','#10b981') +
+      sc('&#128308;','Live Now',s.liveMatches,'Active matches','#ef4444');
+    document.getElementById('dash-recent').innerHTML = data.recentMatches.length
+      ? data.recentMatches.map(m=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:.8rem"><span style="color:#fff;font-weight:500">${esc(m.team1?.name||'?')}<span style="color:#334155;margin:0 5px">vs</span>${esc(m.team2?.name||'?')}</span><span style="color:#10b981;font-size:.72rem">${m.winner?(m.winner._id===m.team1._id?m.team1.name:m.team2.name):'Draw'}</span></div>`).join('')
+      : '<p style="color:#475569;font-size:.8rem;text-align:center;padding:10px">No results yet.</p>';
+    document.getElementById('dash-upcoming').innerHTML = data.nextMatches.length
+      ? data.nextMatches.map(m=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:.8rem"><span style="color:#fff;font-weight:500">${esc(m.team1?.name||'?')}<span style="color:#334155;margin:0 5px">vs</span>${esc(m.team2?.name||'?')}</span><span style="color:#f59e0b;font-size:.72rem">${fmtDate(m.matchDate)}</span></div>`).join('')
+      : '<p style="color:#475569;font-size:.8rem;text-align:center;padding:10px">No upcoming.</p>';
+  } catch(err) { toast(err.message,'error'); }
+}
+function sc(icon,label,val,sub,color) {
+  return `<div class="stat-card"><div style="width:40px;height:40px;border-radius:10px;background:${color}1e;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">${icon}</div><div><div style="font-size:1.6rem;font-weight:800;color:#fff">${val}</div><div style="color:#fff;font-size:.8rem;font-weight:500">${label}</div><div style="color:#475569;font-size:.7rem">${sub}</div></div></div>`;
+}
+
+// ============================================================
+// TOURNAMENTS
+// ============================================================
+async function loadAllTournaments() {
+  try { const {data}=await api('/api/tournaments'); allTournaments=data; return data; } catch{return[];}
+}
+async function loadTournaments() {
+  const data = await loadAllTournaments();
+  const g = document.getElementById('t-grid');
+  if (!data.length) {
+    g.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;padding:44px"><div style="font-size:2.2rem;margin-bottom:9px">&#127942;</div><p style="color:#475569;margin-bottom:12px">No tournaments yet. Create your first one!</p><button onclick="openTournamentModal()" class="btn btn-primary" style="margin:0 auto">Create Tournament</button></div>`;
+    return;
+  }
+  g.innerHTML = data.map(t => `
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#6366f1,#8b5cf6)"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:9px;margin-top:3px">
+        <div>
+          <div style="color:#fff;font-weight:700;font-size:.88rem">${esc(t.name)}</div>
+          <div style="color:#475569;font-size:.7rem;margin-top:2px">${esc(t.sport||'')} &bull; ${fmtDateShort(t.startDate)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+          <span class="badge badge-${t.status}">${t.status}</span>
+          <span class="badge badge-${t.format}">${t.format}</span>
+        </div>
+      </div>
+      <p style="color:#475569;font-size:.73rem;margin-bottom:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(t.description)||'No description.'}</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">
+        <div style="text-align:center;padding:7px;border-radius:7px;background:rgba(255,255,255,.025)"><div style="color:#fff;font-weight:700;font-size:.86rem">${(t.teams||[]).length}</div><div style="color:#475569;font-size:.65rem">Teams</div></div>
+        <div style="text-align:center;padding:7px;border-radius:7px;background:rgba(255,255,255,.025)"><div style="color:#fbbf24;font-weight:700;font-size:.86rem">&#8377;${fmt(t.prizePool)}</div><div style="color:#475569;font-size:.65rem">Prize</div></div>
+        <div style="text-align:center;padding:7px;border-radius:7px;background:rgba(255,255,255,.025)"><div style="color:#fff;font-weight:700;font-size:.86rem">&#8377;${fmt(t.entryFee)}</div><div style="color:#475569;font-size:.65rem">Entry</div></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="openManage('${t._id}')" class="btn btn-secondary btn-sm" style="flex:1">Manage</button>
+        <button onclick="editTournament(${escAttr(t)})" class="btn btn-secondary btn-sm">&#9999;&#65039;</button>
+        <button onclick="deleteTournamentBtn('${t._id}','${esc(t.name)}')" class="btn btn-danger btn-sm">&#128465;</button>
+      </div>
+    </div>`).join('');
+}
+
+function openTournamentModal() {
+  document.getElementById('mt-id').value = '';
+  document.getElementById('mt-name').value = '';
+  document.getElementById('mt-sport').value = 'Volleyball';
+  document.getElementById('mt-format').value = 'league';
+  document.getElementById('mt-start').value = '';
+  document.getElementById('mt-end').value = '';
+  document.getElementById('mt-ef').value = '';
+  document.getElementById('mt-pp').value = '';
+  document.getElementById('mt-desc').value = '';
+  document.getElementById('mt-status').value = 'upcoming';
+  document.getElementById('mt-max').value = '16';
+  document.getElementById('mt-title').textContent = 'Create Tournament';
+  openModal('modal-tournament');
+}
+
+function editTournament(t) {
+  document.getElementById('mt-id').value = t._id;
+  document.getElementById('mt-name').value = t.name;
+  document.getElementById('mt-sport').value = t.sport || 'Volleyball';
+  document.getElementById('mt-format').value = t.format;
+  document.getElementById('mt-start').value = t.startDate?.slice(0,10)||'';
+  document.getElementById('mt-end').value = t.endDate?.slice(0,10)||'';
+  document.getElementById('mt-ef').value = t.entryFee||'';
+  document.getElementById('mt-pp').value = t.prizePool||'';
+  document.getElementById('mt-desc').value = t.description||'';
+  document.getElementById('mt-status').value = t.status;
+  document.getElementById('mt-max').value = t.maxTeams||16;
+  document.getElementById('mt-title').textContent = 'Edit Tournament';
+  openModal('modal-tournament');
+}
+
+async function saveTournament() {
+  const id = document.getElementById('mt-id').value;
+  const name = document.getElementById('mt-name').value.trim();
+  const startDate = document.getElementById('mt-start').value;
+  if (!name) { toast('Tournament name is required.','error'); return; }
+  if (!startDate) { toast('Start date is required.','error'); return; }
+  const body = {
+    name,
+    sport: document.getElementById('mt-sport').value,
+    format: document.getElementById('mt-format').value,
+    startDate,
+    endDate: document.getElementById('mt-end').value || undefined,
+    entryFee: Number(document.getElementById('mt-ef').value)||0,
+    prizePool: Number(document.getElementById('mt-pp').value)||0,
+    description: document.getElementById('mt-desc').value,
+    status: document.getElementById('mt-status').value,
+    maxTeams: Number(document.getElementById('mt-max').value)||16,
+  };
+  try {
+    const {message} = await api(id?`/api/tournaments/${id}`:'/api/tournaments', {
+      method: id?'PUT':'POST', body: JSON.stringify(body)
+    });
+    toast(message,'success');
+    closeModal('modal-tournament');
+    loadTournaments();
+    loadAllData();
+  } catch(err) { toast(err.message,'error'); }
+}
+
+async function deleteTournamentBtn(id, name) {
+  if (!confirm(`DELETE tournament "${name}" and ALL its matches and points? This CANNOT be undone.`)) return;
+  try {
+    const {message} = await api(`/api/tournaments/${id}`, {method:'DELETE'});
+    toast(message,'success');
+    loadTournaments(); loadAllData();
+  } catch(err) { toast(err.message,'error'); }
+}
+
+async function openManage(id) {
+  try {
+    const {data:t} = await api(`/api/tournaments/${id}`);
+    document.getElementById('mgd-id').value = id;
+    document.getElementById('mgd-title').textContent = t.name;
+    document.getElementById('mgd-entry').textContent = '&#8377;'+fmt(t.entryFee);
+    document.getElementById('mgd-prize').textContent = '&#8377;'+fmt(t.prizePool);
+    document.getElementById('mgd-fmt').textContent = t.format.toUpperCase();
+    const enrolled = (t.teams||[]).map(tm=>String(tm._id||tm));
+    const addSel = document.getElementById('mgd-sel');
+    addSel.innerHTML = '<option value="">Select team...</option>' + allTeams.filter(tm=>!enrolled.includes(tm._id)).map(tm=>`<option value="${tm._id}">${esc(tm.name)}</option>`).join('');
+    document.getElementById('mgd-cnt').textContent = (t.teams||[]).length;
+    const tl = document.getElementById('mgd-list');
+    tl.innerHTML = (t.teams||[]).length
+      ? (t.teams||[]).map(tm=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:9px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06)"><div style="display:flex;align-items:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:${tm.color||'#6366f1'}"></div><span style="color:#fff;font-size:.82rem;font-weight:500">${esc(tm.name)}</span>${tm.shortName?`<span style="color:#475569;font-size:.72rem">(${tm.shortName})</span>`:''}</div><button onclick="removeTeamFromT('${id}','${tm._id}')" class="btn btn-danger btn-sm">Remove</button></div>`).join('')
+      : '<p style="color:#475569;font-size:.81rem;text-align:center;padding:9px">No teams enrolled.</p>';
+    openModal('modal-manage');
+  } catch(err) { toast(err.message,'error'); }
+}
+
+async function addTeamToT() {
+  const tid = document.getElementById('mgd-id').value;
+  const teamId = document.getElementById('mgd-sel').value;
+  if (!teamId) { toast('Select a team.','error'); return; }
+  try { const {message}=await api(`/api/tournaments/${tid}/teams`,{method:'POST',body:JSON.stringify({teamId})}); toast(message,'success'); openManage(tid); loadAllData(); }
+  catch(err) { toast(err.message,'error'); }
+}
+async function removeTeamFromT(tid, teamId) {
+  if (!confirm('Remove this team?')) return;
+  try { const {message}=await api(`/api/tournaments/${tid}/teams/${teamId}`,{method:'DELETE'}); toast(message,'success'); openManage(tid); loadAllData(); }
+  catch(err) { toast(err.message,'error'); }
+}
+async function generateFixtures() {
+  const tid = document.getElementById('mgd-id').value;
+  if (!confirm('Generate fixtures? Existing unplayed fixtures will be replaced.')) return;
+  try { const {message,count}=await api(`/api/tournaments/${tid}/generate-fixtures`,{method:'POST'}); toast(`${message} - ${count} matches`,'success'); closeModal('modal-manage'); loadMatches(); }
+  catch(err) { toast(err.message,'error'); }
+}
+
+// ============================================================
+// TEAMS
+// ============================================================
+async function loadAllTeams() {
+  try { const {data}=await api('/api/teams'); allTeams=data; return data; } catch{return[];}
+}
+async function loadTeamsTable() {
+  const data = await loadAllTeams();
+  const tbody = document.getElementById('teams-tbody');
+  if (!data.length) { tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:#475569">No teams yet. Create your first team!</td></tr>'; return; }
+  tbody.innerHTML = data.map(t=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:10px"><div style="width:31px;height:31px;border-radius:8px;background:${t.color||'#6366f1'};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.71rem">${(t.shortName||t.name||'T').slice(0,2).toUpperCase()}</div><div><div style="color:#fff;font-weight:600;font-size:.82rem">${esc(t.name)}</div><div style="color:#475569;font-size:.7rem">${esc(t.city||'')}</div></div></div></td>
+    <td style="color:#cbd5e1;font-size:.8rem">${esc(t.captain||'&#8212;')}</td>
+    <td><span class="badge badge-upcoming">${(t.players||[]).length}</span></td>
+    <td style="color:#475569;font-size:.73rem">${(t.tournaments||[]).map(tn=>tn.name||'').filter(Boolean).join(', ')||'&#8212;'}</td>
+    <td style="text-align:right"><div style="display:flex;gap:6px;justify-content:flex-end">
+      <button onclick="editTeam(${escAttr(t)})" class="btn btn-secondary btn-sm">Edit</button>
+      <button onclick="deleteTeam('${t._id}')" class="btn btn-danger btn-sm">Delete</button>
+    </div></td></tr>`).join('');
+}
+
+function openTeamModal() {
+  ['mte-id','mte-name','mte-sn','mte-cap','mte-city'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mte-color').value='#6366f1';
+  document.getElementById('mte-title').textContent='Create Team';
+  openModal('modal-team');
+}
+function editTeam(t) {
+  document.getElementById('mte-id').value=t._id;
+  document.getElementById('mte-name').value=t.name;
+  document.getElementById('mte-sn').value=t.shortName||'';
+  document.getElementById('mte-color').value=t.color||'#6366f1';
+  document.getElementById('mte-cap').value=t.captain||'';
+  document.getElementById('mte-city').value=t.city||'';
+  document.getElementById('mte-title').textContent='Edit Team';
+  openModal('modal-team');
+}
+async function saveTeam() {
+  const id = document.getElementById('mte-id').value;
+  const name = document.getElementById('mte-name').value.trim();
+  if (!name) { toast('Team name required.','error'); return; }
+  const body={name,shortName:document.getElementById('mte-sn').value.trim(),color:document.getElementById('mte-color').value,captain:document.getElementById('mte-cap').value.trim(),city:document.getElementById('mte-city').value.trim()};
+  try { const {message}=await api(id?`/api/teams/${id}`:'/api/teams',{method:id?'PUT':'POST',body:JSON.stringify(body)}); toast(message,'success'); closeModal('modal-team'); loadTeamsTable(); loadAllTeams(); }
+  catch(err) { toast(err.message,'error'); }
+}
+async function deleteTeam(id) {
+  if (!confirm('Delete this team?')) return;
+  try { const {message}=await api(`/api/teams/${id}`,{method:'DELETE'}); toast(message,'success'); loadTeamsTable(); loadAllTeams(); }
+  catch(err) { toast(err.message,'error'); }
+}
+
+// ============================================================
+// MATCHES
+// ============================================================
+async function populateMatchFilters() {
+  await loadAllData();
+  const sel = document.getElementById('mf-t');
+  sel.innerHTML='<option value="">All Tournaments</option>'+allTournaments.map(t=>`<option value="${t._id}">${esc(t.name)}</option>`).join('');
+  const ms = document.getElementById('mm-t');
+  ms.innerHTML='<option value="">Select tournament...</option>'+allTournaments.map(t=>`<option value="${t._id}">${esc(t.name)}</option>`).join('');
+}
+async function loadMatchTeams() {
+  const tid=document.getElementById('mm-t').value;
+  const t=allTournaments.find(x=>x._id===tid);
+  const teams=t?.teams||[];
+  const opts='<option value="">Select...</option>'+teams.map(tm=>`<option value="${tm._id||tm}">${esc(tm.name||tm)}</option>`).join('');
+  document.getElementById('mm-t1').innerHTML=opts;
+  document.getElementById('mm-t2').innerHTML=opts;
+}
+async function loadMatches() {
+  const tid=document.getElementById('mf-t')?.value;
+  const status=document.getElementById('mf-s')?.value;
+  let url='/api/matches?';
+  if(tid) url+=`tournament=${tid}&`;
+  if(status) url+=`status=${status}`;
+  try {
+    const {data}=await api(url);
+    const tbody=document.getElementById('matches-tbody');
+    if(!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#475569">No matches found.</td></tr>';return;}
+    tbody.innerHTML=data.map(m=>{
+      const fmt=m.tournament?.settings?.matchFormat||'single';
+      const score=m.status==='completed'
+        ?(fmt==='sets'?`<span style="color:#a5b4fc;font-weight:700">${m.setsWon1}-${m.setsWon2}</span> <span style="color:#334155;font-size:.71rem">sets</span>`:`<span style="color:#fff;font-weight:700">${m.scoreText1||m.score1} &ndash; ${m.scoreText2||m.score2}</span>`)
+        :'<span style="color:#334155">&#8212;</span>';
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:7px;font-size:.8rem">
+          <div style="width:8px;height:8px;border-radius:50%;background:${m.team1?.color||'#6366f1'};flex-shrink:0"></div>
+          <span style="color:#fff;font-weight:500">${esc(m.team1?.name||'?')}</span>
+          <span style="color:#334155;font-size:.7rem">vs</span>
+          <div style="width:8px;height:8px;border-radius:50%;background:${m.team2?.color||'#8b5cf6'};flex-shrink:0"></div>
+          <span style="color:#fff;font-weight:500">${esc(m.team2?.name||'?')}</span>
+        </div></td>
+        <td style="color:#475569;font-size:.73rem">${esc(m.tournament?.name||'&#8212;')}</td>
+        <td style="color:#475569;font-size:.73rem">${fmtDate(m.matchDate)}</td>
+        <td style="color:#475569;font-size:.73rem">${esc(m.round||'&#8212;')}</td>
+        <td>${score}</td>
+        <td><span class="badge badge-${m.status}">${m.status}</span></td>
+        <td style="text-align:right"><div style="display:flex;gap:5px;justify-content:flex-end">
+          <button onclick="openResultModal('${m._id}')" class="btn btn-${m.status==='completed'?'secondary':'success'} btn-sm">${m.status==='completed'?'Edit':'Result'}</button>
+          ${m.status==='scheduled'?`<button onclick="setLive('${m._id}')" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.22);font-size:.71rem;padding:4px 8px">&#128308;</button>`:''}
+          <button onclick="deleteMatch('${m._id}')" class="btn btn-danger btn-sm">&#128465;</button>
+        </div></td></tr>`;
+    }).join('');
+  } catch(err) { toast(err.message,'error'); }
+}
+
+function openMatchModal() {
+  ['mm-id','mm-venue','mm-round','mm-date'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mm-status').value='scheduled';
+  document.getElementById('mm-title').textContent='Schedule Match';
+  document.getElementById('mm-t').value='';
+  document.getElementById('mm-t1').innerHTML='<option value="">Select...</option>';
+  document.getElementById('mm-t2').innerHTML='<option value="">Select...</option>';
+  openModal('modal-match');
+}
+
+async function saveMatch() {
+  const id=document.getElementById('mm-id').value;
+  const body={tournament:document.getElementById('mm-t').value,team1:document.getElementById('mm-t1').value,team2:document.getElementById('mm-t2').value,matchDate:document.getElementById('mm-date').value,venue:document.getElementById('mm-venue').value,round:document.getElementById('mm-round').value||'League Stage',status:document.getElementById('mm-status').value};
+  if(!body.tournament||!body.team1||!body.team2||!body.matchDate){toast('Tournament, both teams, and date are required.','error');return;}
+  if(body.team1===body.team2){toast('Team 1 and 2 cannot be the same.','error');return;}
+  try{const{message}=await api(id?`/api/matches/${id}`:'/api/matches',{method:id?'PUT':'POST',body:JSON.stringify(body)});toast(message,'success');closeModal('modal-match');loadMatches();}
+  catch(err){toast(err.message,'error');}
+}
+
+async function openResultModal(matchId) {
+  try {
+    const {data:m} = await api(`/api/matches/${matchId}`);
+    _rMatch=m;
+    const cfg=m.tournament?.settings||{};
+    const fmt=cfg.matchFormat||'single';
+    const bestOf=cfg.bestOf||1;
+    document.getElementById('r-id').value=matchId;
+    document.getElementById('r-fmt').value=fmt;
+    document.getElementById('r-bo').value=bestOf;
+    document.getElementById('r-teams').textContent=`${m.team1?.name||'?'} vs ${m.team2?.name||'?'}`;
+    document.getElementById('r-date').textContent=fmtDate(m.matchDate);
+    document.getElementById('r-l1').textContent=(m.team1?.name||'Team 1')+' Score';
+    document.getElementById('r-l2').textContent=(m.team2?.name||'Team 2')+' Score';
+    const fmtNames={single:'Single Game',sets:`Best of ${bestOf} Sets`,innings:'Innings',periods:'Timed Periods'};
+    document.getElementById('r-badge').innerHTML=`<span class="badge badge-league">${m.tournament?.sport||''} &mdash; ${fmtNames[fmt]||fmt}</span>`;
+    document.getElementById('r-s1').value=m.score1??'';
+    document.getElementById('r-s2').value=m.score2??'';
+    document.getElementById('r-st1').value=m.scoreText1||'';
+    document.getElementById('r-st2').value=m.scoreText2||'';
+    document.getElementById('r-single').style.display=fmt==='sets'?'none':'block';
+    document.getElementById('r-sets').style.display=fmt==='sets'?'block':'none';
+    if(fmt==='sets') buildSetRows(m,cfg);
+    openModal('modal-result');
+  } catch(err){toast(err.message,'error');}
+}
+
+function buildSetRows(m, cfg) {
+  const bestOf=cfg.bestOf||3;
+  const setsToWin=cfg.setsToWin||Math.ceil(bestOf/2);
+  const defPts=cfg.defaultSetPoints||25;
+  const finPts=cfg.finalSetPoints||15;
+  const shorter=cfg.useShorterFinalSet;
+  const t1=_rMatch?.team1?.name||'T1', t2=_rMatch?.team2?.name||'T2';
+  const existSets=m.sets||[];
+  let html='';
+  for(let i=1;i<=bestOf;i++){
+    const ex=existSets[i-1]||{};
+    const isFin=i===bestOf&&shorter;
+    const pts=isFin?finPts:defPts;
+    html+=`<div style="display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 11px;margin-bottom:6px">
+      <div style="color:#475569;font-size:.73rem;font-weight:800;width:28px">S${i}${isFin?'*':''}</div>
+      <div style="display:flex;align-items:center;gap:7px;flex:1">
+        <span style="color:#fff;font-size:.77rem;font-weight:600;width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t1)}</span>
+        <input type="number" min="0" id="set${i}_s1" value="${ex.score1??''}" placeholder="${pts}" class="si" onchange="recalcSets()"/>
+        <span style="color:#334155;font-weight:700">:</span>
+        <input type="number" min="0" id="set${i}_s2" value="${ex.score2??''}" placeholder="${pts}" class="si" onchange="recalcSets()"/>
+        <span style="color:#fff;font-size:.77rem;font-weight:600;width:80px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t2)}</span>
+      </div>
+      <span style="color:#475569;font-size:.69rem;white-space:nowrap">to ${pts}</span>
+    </div>`;
+  }
+  document.getElementById('r-set-rows').innerHTML=html;
+  document.getElementById('r-tally').textContent=`Need ${setsToWin} to win`;
+  recalcSets();
+}
+
+function recalcSets() {
+  const bestOf=Number(document.getElementById('r-bo').value);
+  let w1=0,w2=0;
+  for(let i=1;i<=bestOf;i++){
+    const s1=Number(document.getElementById(`set${i}_s1`)?.value||0);
+    const s2=Number(document.getElementById(`set${i}_s2`)?.value||0);
+    if(s1>s2)w1++;else if(s2>s1)w2++;
+  }
+  const setsToWin=Math.ceil(bestOf/2);
+  document.getElementById('r-tally').textContent=`${w1} &mdash; ${w2} sets`;
+  const res=document.getElementById('r-winner-box');
+  const txt=document.getElementById('r-winner-txt');
+  if(w1>=setsToWin||w2>=setsToWin){
+    res.style.display='block';
+    const winner=w1>w2?(_rMatch?.team1?.name||'Team 1'):(_rMatch?.team2?.name||'Team 2');
+    txt.textContent=`&#127942; ${winner} wins (${w1>w2?w1:w2}-${w1>w2?w2:w1})`;
+  } else {res.style.display='none';}
+}
+
+async function submitResult() {
+  const matchId=document.getElementById('r-id').value;
+  const fmt=document.getElementById('r-fmt').value;
+  const bestOf=Number(document.getElementById('r-bo').value);
+  let body={};
+  if(fmt==='sets'){
+    const sets=[]; let sw1=0,sw2=0;
+    for(let i=1;i<=bestOf;i++){
+      const s1=Number(document.getElementById(`set${i}_s1`)?.value||0);
+      const s2=Number(document.getElementById(`set${i}_s2`)?.value||0);
+      if(s1===0&&s2===0)continue;
+      sets.push({setNo:i,score1:s1,score2:s2,winner:s1>s2?1:s2>s1?2:0});
+      if(s1>s2)sw1++;else if(s2>s1)sw2++;
+    }
+    if(!sets.length){toast('Enter at least one set score.','error');return;}
+    body={score1:sw1,score2:sw2,scoreText1:String(sw1),scoreText2:String(sw2),sets};
+  } else {
+    const s1=document.getElementById('r-s1').value;
+    const s2=document.getElementById('r-s2').value;
+    if(s1===''||s2===''){toast('Both scores required.','error');return;}
+    body={score1:Number(s1),score2:Number(s2),scoreText1:document.getElementById('r-st1').value,scoreText2:document.getElementById('r-st2').value};
+  }
+  try{const{message}=await api(`/api/matches/${matchId}/result`,{method:'PUT',body:JSON.stringify(body)});toast(message,'success');closeModal('modal-result');loadMatches();}
+  catch(err){toast(err.message,'error');}
+}
+
+async function setLive(id){try{const{message}=await api(`/api/matches/${id}/status`,{method:'PUT',body:JSON.stringify({status:'live'})});toast(message,'success');loadMatches();}catch(err){toast(err.message,'error');}}
+async function deleteMatch(id){if(!confirm('Delete this match?'))return;try{const{message}=await api(`/api/matches/${id}`,{method:'DELETE'});toast(message,'success');loadMatches();}catch(err){toast(err.message,'error');}}
+
+// ============================================================
+// LEADERBOARD
+// ============================================================
+async function populateLbSel() {
+  await loadAllData();
+  const sel=document.getElementById('lb-sel');
+  sel.innerHTML='<option value="">&#8212; Select Tournament &#8212;</option>'+allTournaments.map(t=>`<option value="${t._id}">${esc(t.name)} (${esc(t.sport||'General')} &bull; ${t.format})</option>`).join('');
+}
+
+async function loadLeaderboard() {
+  const tid=document.getElementById('lb-sel').value;
+  const card=document.getElementById('lb-card');
+  const showBtns = !!tid;
+  document.getElementById('lb-edit-btn').style.display=showBtns?'':'none';
+  document.getElementById('lb-reset-btn').style.display=showBtns?'':'none';
+  document.getElementById('lb-del-btn').style.display=showBtns?'':'none';
+  _lbTid=tid||null;
+  if(!tid){card.innerHTML='<div style="text-align:center;padding:44px;color:#475569">Select a tournament above to view the leaderboard.</div>';return;}
+  card.innerHTML='<div style="display:flex;justify-content:center;padding:32px"><div class="spin"></div></div>';
+  try {
+    const {data,config:cfg}=await api(`/api/points/${tid}`);
+    const t=allTournaments.find(x=>x._id===tid);
+    const fmt=cfg?.matchFormat||'single';
+    const isSets=fmt==='sets';
+    const pWin=cfg?.pointsWin??3, pLoss=cfg?.pointsLoss??0, pTie=cfg?.pointsTie??1;
+    const pBonus=cfg?.pointsBonusStraight??0;
+    const useClose=cfg?.useCloseWinPoints, pClose=cfg?.pointsCloseWin??0;
+    if(!data.length){card.innerHTML='<div style="text-align:center;padding:44px;color:#475569"><div style="font-size:2rem;margin-bottom:8px">&#128202;</div><p>No standings yet. Enter some match results first.</p></div>';return;}
+
+    // Points system key row
+    let keyHtml=`<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:14px;padding:10px 13px;background:rgba(255,255,255,.02);border-radius:9px;border:1px solid rgba(255,255,255,.06);font-size:.74rem;color:#475569">
+      <span>&#127942; Win = <strong style="color:#fff">${pWin} pts</strong></span>
+      <span>&#129309; Draw = <strong style="color:#fff">${pTie} pt</strong></span>
+      <span>&#10060; Loss = <strong style="color:#fff">${pLoss} pts</strong></span>
+      ${pBonus>0?`<span>&#9889; Straight Win +<strong style="color:#a5b4fc">${pBonus}</strong> bonus</span>`:''}
+      ${useClose?`<span>&#128293; Close Win = <strong style="color:#fcd34d">${pClose} pts</strong></span>`:''}
+    </div>`;
+
+    card.innerHTML = keyHtml + `
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+        <svg style="width:18px;height:18px;color:#fbbf24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span style="color:#fff;font-weight:700;font-size:.94rem">Tournament Leaderboard</span>
+      </div>
+      <div style="overflow-x:auto">
+      <table class="lb" style="width:100%;min-width:680px">
+        <thead>
+          <tr>
+            <th style="width:65px">RANK</th>
+            <th>TEAM</th>
+            <th style="text-align:center">PLAYED</th>
+            <th style="text-align:center;color:#22c55e">WON</th>
+            <th style="text-align:center;color:#ef4444">LOST</th>
+            <th style="text-align:center;color:#94a3b8">DRAW</th>
+            ${isSets?'<th style="text-align:center">SETS +/-</th>':''}
+            <th style="text-align:center">POINTS +/-</th>
+            <th style="text-align:center">WIN %</th>
+            <th style="text-align:right">TOURNAMENT POINTS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map((e,i) => {
+            const netPts=e.pointsFor-e.pointsAgainst;
+            const netSets=(e.setsWon||0)-(e.setsLost||0);
+            const wpct=e.winPct||0;
+            return `<tr class="${i===0?'top':''}">
+              <td>
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span style="font-size:1.1rem">${i===0?'&#127945;':i===1?'&#129352;':i===2?'&#129353;':''}</span>
+                  <span style="font-weight:700;color:${i===0?'#fbbf24':i===1?'#94a3b8':i===2?'#f97316':'#94a3b8'};font-size:.95rem">${e.rank}</span>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:28px;height:28px;border-radius:7px;background:${e.team?.color||'#6366f1'};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.67rem;flex-shrink:0">${(e.team?.shortName||e.team?.name||'?').slice(0,3).toUpperCase()}</div>
+                  <div>
+                    <div style="color:#fff;font-weight:700;font-size:.86rem">${esc(e.team?.name||'&#8212;')}</div>
+                    ${e.manualEdit?'<div style="color:#f59e0b;font-size:.63rem">&#9999;&#65039; manual</div>':''}
+                  </div>
+                </div>
+              </td>
+              <td style="text-align:center;color:#94a3b8">${e.played}</td>
+              <td style="text-align:center;font-weight:700;color:#22c55e">${e.won}</td>
+              <td style="text-align:center;color:#ef4444">${e.lost}</td>
+              <td style="text-align:center;color:#94a3b8">${e.drawn||0}</td>
+              ${isSets?`<td style="text-align:center"><span style="color:#e2e8f0;font-weight:600">${e.setsWon||0} - ${e.setsLost||0}</span> <span class="${netSets>0?'np':netSets<0?'nn':'nz'}">(${netSets>0?'+':''}${netSets})</span></td>`:''}
+              <td style="text-align:center"><span style="color:#e2e8f0;font-weight:600">${e.pointsFor} - ${e.pointsAgainst}</span> <span class="${netPts>0?'np':netPts<0?'nn':'nz'}">(${netPts>0?'+':''}${netPts})</span></td>
+              <td style="text-align:center">
+                <div style="display:flex;align-items:center;justify-content:center;gap:7px">
+                  <div class="pbar" style="width:44px"><div class="pfill" style="width:${wpct}%"></div></div>
+                  <span style="color:#94a3b8;font-size:.77rem">${wpct}%</span>
+                </div>
+              </td>
+              <td style="text-align:right"><span class="pts">${e.points}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>`;
+  } catch(err){card.innerHTML=`<p style="color:#ef4444;text-align:center;padding:24px">${esc(err.message)}</p>`;}
+}
+
+async function resetLeaderboard() {
+  if(!_lbTid)return;
+  const t=allTournaments.find(x=>x._id===_lbTid);
+  if(!confirm(`Reset the entire points table for "${t?.name}"? Match data stays.`))return;
+  try{const{message}=await api(`/api/points/${_lbTid}`,{method:'DELETE'});toast(message,'success');loadLeaderboard();}
+  catch(err){toast(err.message,'error');}
+}
+
+async function deleteLbTournament() {
+  if(!_lbTid)return;
+  const t=allTournaments.find(x=>x._id===_lbTid);
+  if(!confirm(`PERMANENTLY delete tournament "${t?.name}" with ALL matches and data? Cannot be undone!`))return;
+  try{
+    const{message}=await api(`/api/tournaments/${_lbTid}`,{method:'DELETE'});
+    toast(message,'success');
+    _lbTid=null;
+    await loadAllData();
+    populateLbSel();
+    document.getElementById('lb-sel').value='';
+    loadLeaderboard();
+  }catch(err){toast(err.message,'error');}
+}
+
+async function openManualEdit() {
+  if(!_lbTid)return;
+  try{
+    const{data}=await api(`/api/points/${_lbTid}`);
+    document.getElementById('edit-tbody').innerHTML=data.map(e=>`
+      <tr id="erow-${e.team?._id}">
+        <td><div style="display:flex;align-items:center;gap:7px"><div style="width:7px;height:7px;border-radius:50%;background:${e.team?.color||'#6366f1'}"></div><span style="color:#fff;font-size:.8rem;font-weight:600">${esc(e.team?.name||'&#8212;')}</span></div></td>
+        <td><input type="number" min="0" class="ed-inp" id="ep-${e.team?._id}-p" value="${e.played}"/></td>
+        <td><input type="number" min="0" class="ed-inp" id="ep-${e.team?._id}-w" value="${e.won}"/></td>
+        <td><input type="number" min="0" class="ed-inp" id="ep-${e.team?._id}-l" value="${e.lost}"/></td>
+        <td><input type="number" min="0" class="ed-inp" id="ep-${e.team?._id}-d" value="${e.drawn||0}"/></td>
+        <td><input type="number" min="0" class="ed-inp" id="ep-${e.team?._id}-f" value="${e.pointsFor}"/></td>
+        <td><input type="number" min="0" class="ed-inp" id="ep-${e.team?._id}-a" value="${e.pointsAgainst}"/></td>
+        <td><input type="number" min="0" class="ed-inp" id="ep-${e.team?._id}-pts" value="${e.points}" style="color:#a5b4fc;font-weight:700;width:52px"/></td>
+        <td><button onclick="saveEditRow('${_lbTid}','${e.team?._id}')" class="btn btn-success btn-sm">Save</button></td>
+      </tr>`).join('');
+    openModal('modal-edit');
+  }catch(err){toast(err.message,'error');}
+}
+
+async function saveEditRow(tid, teamId) {
+  const g=id=>Number(document.getElementById(`ep-${teamId}-${id}`)?.value||0);
+  const body={played:g('p'),won:g('w'),lost:g('l'),drawn:g('d'),pointsFor:g('f'),pointsAgainst:g('a'),points:g('pts')};
+  try{const{message}=await api(`/api/points/${tid}/team/${teamId}`,{method:'PUT',body:JSON.stringify(body)});toast(message,'success');loadLeaderboard();}
+  catch(err){toast(err.message,'error');}
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function buildPresets() {
+  const c=document.getElementById('sport-presets');
+  c.innerHTML=Object.entries(PRESETS).map(([sport,p])=>
+    `<div class="sp-card" id="pc-${sport}" onclick="applyPreset('${sport}')">
+      <div style="font-size:1.5rem;margin-bottom:3px">${p.icon}</div>
+      <div style="font-size:.71rem;font-weight:700;color:#e2e8f0">${sport}</div>
+    </div>`).join('');
+}
+
+async function populateStSel() {
+  await loadAllData();
+  const sel=document.getElementById('st-sel');
+  sel.innerHTML='<option value="">&#8212; select a tournament &#8212;</option>'+allTournaments.map(t=>`<option value="${t._id}">${esc(t.name)}</option>`).join('');
+}
+
+async function loadSettings() {
+  const tid=document.getElementById('st-sel').value;
+  const panel=document.getElementById('settings-panel');
+  if(!tid){panel.style.display='none';return;}
+  try{
+    const{data:cfg,sport}=await api(`/api/tournaments/${tid}/settings`);
+    panel.style.display='block';
+    applyToForm(cfg,sport);
+    updatePreview();
+  }catch(err){toast(err.message,'error');}
+}
+
+function applyToForm(cfg,sport) {
+  document.querySelectorAll('.sp-card').forEach(c=>c.classList.remove('sel'));
+  if(sport&&PRESETS[sport]) document.getElementById(`pc-${sport}`)?.classList.add('sel');
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el&&v!==undefined)el.value=v;};
+  const sc=(id,v)=>{const el=document.getElementById(id);if(el)el.checked=!!v;};
+  sv('s-fmt',cfg.matchFormat||'single');
+  sv('s-bo',cfg.bestOf||3);
+  sv('s-dsp',cfg.defaultSetPoints||25);
+  sv('s-fsp',cfg.finalSetPoints||15);
+  sv('s-per',cfg.periodCount||2);
+  sv('s-inn',cfg.inningsPerSide||1);
+  sv('s-ovr',cfg.oversPerInnings||20);
+  sc('s-shorter',cfg.useShorterFinalSet);
+  sc('s-by2',cfg.mustWinBy2);
+  sc('s-shoot',cfg.hasShootout);
+  sv('s-pw',cfg.pointsWin??3);
+  sv('s-pl',cfg.pointsLoss??0);
+  sv('s-pt',cfg.pointsTie??1);
+  sv('s-pb',cfg.pointsBonusStraight??0);
+  sv('s-pcw',cfg.pointsCloseWin??0);
+  sc('s-ucw',cfg.useCloseWinPoints);
+  sv('s-rules',cfg.rules||'');
+  const tb=cfg.tiebreakerOrder||['points','netSets','netPoints','won'];
+  sv('s-tb2',tb[1]||'netSets');
+  sv('s-tb3',tb[2]||'netPoints');
+  onFmtChange(); onCwToggle();
+}
+
+function applyPreset(sport) {
+  const p=PRESETS[sport]; if(!p)return;
+  document.querySelectorAll('.sp-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById(`pc-${sport}`)?.classList.add('sel');
+  applyToForm(p,sport);
+  toast(`&#9989; ${sport} preset applied. Adjust as needed.`,'info');
+  updatePreview();
+}
+
+function onFmtChange() {
+  const fmt=document.getElementById('s-fmt').value;
+  const show=ids=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  const hide=ids=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  hide(['sw-bo','sw-sp','sw-fp','sw-short','sw-by2','sw-per','sw-inn','sw-ovr']);
+  if(fmt==='sets')    show(['sw-bo','sw-sp','sw-fp','sw-short','sw-by2']);
+  if(fmt==='periods') show(['sw-per']);
+  if(fmt==='innings') show(['sw-inn','sw-ovr']);
+}
+function onBoChange() {
+  const bo=Number(document.getElementById('s-bo').value);
+  document.getElementById('lbl-fp').textContent=`Set ${bo} (Final) Points`;
+}
+function onCwToggle() {
+  const on=document.getElementById('s-ucw').checked;
+  document.getElementById('sw-cw').style.display=on?'':'none';
+  updatePreview();
+}
+function updatePreview() {
+  const gn=id=>Number(document.getElementById(id)?.value||0);
+  const pWin=gn('s-pw'),pLoss=gn('s-pl'),pTie=gn('s-pt');
+  const pBonus=gn('s-pb'),pClose=gn('s-pcw');
+  const useClose=document.getElementById('s-ucw')?.checked;
+  const fmt=document.getElementById('s-fmt')?.value||'single';
+  const bestOf=Number(document.getElementById('s-bo')?.value||1);
+  const isSets=fmt==='sets'&&bestOf>1;
+  const rows=isSets?[
+    {icon:'&#9889;',label:`Straight Win (${bestOf===3?'2-0':'3-0'})`,pts:pWin+pBonus,color:'#22c55e'},
+    {icon:'&#128293;',label:`Close Win (${bestOf===3?'2-1':'3-2'})`,pts:useClose&&pClose>0?pClose:pWin,color:'#f59e0b'},
+    {icon:'&#10060;',label:'Loss',pts:pLoss,color:'#ef4444'},
+  ]:[
+    {icon:'&#127942;',label:'Win',pts:pWin+pBonus,color:'#22c55e'},
+    {icon:'&#129309;',label:'Draw/Tie',pts:pTie,color:'#f59e0b'},
+    {icon:'&#10060;',label:'Loss',pts:pLoss,color:'#ef4444'},
+  ];
+  document.getElementById('pts-preview').innerHTML=rows.map(r=>
+    `<div class="card" style="text-align:center;padding:11px"><div style="font-size:1.2rem;margin-bottom:3px">${r.icon}</div><div style="color:#475569;font-size:.68rem;margin-bottom:4px">${r.label}</div><div style="font-size:1.3rem;font-weight:800;color:${r.color}">${r.pts}</div><div style="color:#475569;font-size:.67rem">pts</div></div>`
+  ).join('');
+}
+['s-pw','s-pl','s-pt','s-pb','s-pcw'].forEach(id=>{document.getElementById(id)?.addEventListener('input',updatePreview);});
+
+async function saveSettings() {
+  const tid=document.getElementById('st-sel').value;
+  if(!tid){toast('Select a tournament first.','error');return;}
+  const gn=id=>Number(document.getElementById(id)?.value||0);
+  const gc=id=>document.getElementById(id)?.checked||false;
+  const gv=id=>document.getElementById(id)?.value||'';
+  const bo=gn('s-bo')||3;
+  const body={
+    matchFormat:gv('s-fmt'),bestOf:bo,setsToWin:Math.ceil(bo/2),
+    defaultSetPoints:gn('s-dsp')||25,finalSetPoints:gn('s-fsp')||15,
+    useShorterFinalSet:gc('s-shorter'),mustWinBy2:gc('s-by2'),hasShootout:gc('s-shoot'),
+    periodCount:gn('s-per')||2,inningsPerSide:gn('s-inn')||1,oversPerInnings:gn('s-ovr')||20,
+    pointsWin:gn('s-pw'),pointsLoss:gn('s-pl'),pointsTie:gn('s-pt'),
+    pointsBonusStraight:gn('s-pb'),pointsCloseWin:gn('s-pcw'),useCloseWinPoints:gc('s-ucw'),
+    tiebreakerOrder:['points',gv('s-tb2'),gv('s-tb3'),'pointsFor'],
+    rules:document.getElementById('s-rules')?.value||'',
+  };
+  const selCard=document.querySelector('.sp-card.sel');
+  if(selCard){const name=selCard.querySelector('div:last-child').textContent;body.sport=name;}
+  try{const{message}=await api(`/api/tournaments/${tid}/settings`,{method:'PUT',body:JSON.stringify(body)});toast(message,'success');loadAllData();}
+  catch(err){toast(err.message,'error');}
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(obj){return JSON.stringify(obj).replace(/"/g,'&quot;');}
+function fmtDate(d){if(!d)return'&#8212;';return new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function fmtDateShort(d){if(!d)return'&#8212;';return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function fmt(n){return n!=null?Number(n).toLocaleString('en-IN'):'0';}
+</script>
+</body>
+</html>

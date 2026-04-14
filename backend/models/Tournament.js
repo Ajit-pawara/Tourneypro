@@ -1,0 +1,51 @@
+const mongoose = require('mongoose');
+
+const settingsSchema = new mongoose.Schema({
+  pointsWin:              { type: Number, default: 2 },
+  pointsLoss:             { type: Number, default: 0 },
+  pointsTie:              { type: Number, default: 1 },
+  pointsBonusStraight:    { type: Number, default: 0 },
+  pointsCloseWin:         { type: Number, default: 0 },
+  useCloseWinPoints:      { type: Boolean, default: false },
+  matchFormat:            { type: String, default: 'single', enum: ['single','sets','innings','periods'] },
+  bestOf:                 { type: Number, default: 1 },
+  setsToWin:              { type: Number, default: 1 },
+  defaultSetPoints:       { type: Number, default: 25 },
+  finalSetPoints:         { type: Number, default: 15 },
+  useShorterFinalSet:     { type: Boolean, default: false },
+  mustWinBy2:             { type: Boolean, default: true },
+  maxOvertimePoints:      { type: Number, default: 30 },
+  periodCount:            { type: Number, default: 2 },
+  periodDurationMins:     { type: Number, default: 45 },
+  overtimeDurationMins:   { type: Number, default: 15 },
+  hasShootout:            { type: Boolean, default: false },
+  inningsPerSide:         { type: Number, default: 1 },
+  oversPerInnings:        { type: Number, default: 20 },
+  powerplayOvers:         { type: Number, default: 6 },
+  tiebreakerOrder:        { type: [String], default: ['points','netScore','won','goalsFor'] },
+  scoreLabel:             { type: String, default: 'Score' },
+  setLabel:               { type: String, default: 'Set' },
+  pointLabel:             { type: String, default: 'Points' },
+  rules:                  { type: String, default: '' },
+  sport:                  { type: String, default: '' },
+}, { _id: false });
+
+const tournamentSchema = new mongoose.Schema({
+  name:             { type: String, required: true, trim: true },
+  description:      { type: String, default: '' },
+  sport:            { type: String, default: 'General' },
+  format:           { type: String, enum: ['league', 'knockout'], required: true },
+  status:           { type: String, enum: ['upcoming', 'ongoing', 'completed'], default: 'upcoming' },
+  startDate:        { type: Date, required: true },
+  endDate:          { type: Date },
+  entryFee:         { type: Number, default: 0 },
+  prizePool:        { type: Number, default: 0 },
+  rules:            { type: String, default: '' },
+  banner:           { type: String, default: '' },
+  teams:            [{ type: mongoose.Schema.Types.ObjectId, ref: 'Team' }],
+  maxTeams:         { type: Number, default: 16 },
+  fixturesGenerated:{ type: Boolean, default: false },
+  settings:         { type: settingsSchema, default: () => ({}) },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Tournament', tournamentSchema);

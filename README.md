@@ -18,6 +18,9 @@ cd backend
 npm install
 ```
 
+
+
+
 ### 3. Seed the Admin User
 ```bash
 npm run seed
